@@ -1,0 +1,17 @@
+useDynLib(phmm)
+
+importFrom(survival, Surv)
+importFrom(stats, AIC)
+
+export(phmm, phmm.design, loglik.cond, linear.predictors, 
+       pseudoPoisPHMM, traceHat, traceHat.default, cAIC,
+       phmm.cond.loglik)
+
+S3method(loglik.cond, phmm)
+S3method(linear.predictors, phmm)
+S3method(pseudoPoisPHMM, phmm)
+S3method(AIC, phmm)
+
+S3method(print, phmm)
+S3method(print, summary.phmm)
+S3method(summary, phmm)
