@@ -4,7 +4,7 @@
 Pseudo poisson data for fitting PHMM via GLMM
 }
 \description{
-Function for computing log-likelihood conditional on the estimated random effects from an object of class \code{phmm} returned by \code{phmm}.
+Function for generating a pseudo Poisson data set which can be used to fit a PHMM using GLMM software. This follows the mixed-model extension Whitehead (1980), who described how to fit Cox (fixed effects) models with GLM software.
 }
 \usage{
  pseudoPoisPHMM(x)

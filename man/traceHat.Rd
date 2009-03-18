@@ -5,7 +5,7 @@
 Trace of the "hat" matrix from PHMM-MCEM fit
 }
 \description{
-Compute trace of the "hat" matrix from PHMM-MCEM fit using pseudo poisson generalized linear mixed-effects model (GLMM).
+Compute trace of the ``hat'' matrix from PHMM-MCEM fit using a direct approximation method (Donohue, et al, submitted), an approximation via hierarchical likelihoods (Ha et al, 2007), or an approximation via a generalized linear mixed-effects model (GLMM) (Donohue, et al, submitted).
 }
 \usage{
  traceHat(x, method="direct")
@@ -26,6 +26,8 @@ The trace of the "hat" matrix which can be used as a measure of complexity of th
 
 \references{
 Breslow, NE, Clayton, DG. (1993). Approximate Inference in Generalized Linear Mixed Models. Journal of the American Statistical Association, Vol. 88, No. 421, pp. 9-25.
+
+Donohue, M, Xu, R, Vaida, F, Haut R. Model Selection for Clustered Data: Conditional Akaike Information under GLMM and PHMM. Submitted.
 
 Ha, ID, Lee, Y, MacKenzie, G. (2007). Model Selection for multi-component frailty models. Statistics in Medicine, Vol. 26, pp. 4790-4807.
 

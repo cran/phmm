@@ -3,11 +3,11 @@
 \title{Proportional Hazards Model with Mixed Effects}
 \description{
 Fits a proportional hazards regression model incorporating random effects.
-The function implements an EM algorithm using Markov Chain Monte Carlo (MCMC) at the E-step as described in Vaida and Xu (2001).
+The function implements an EM algorithm using Markov Chain Monte Carlo (MCMC) at the E-step as described in Vaida and Xu (2000).
 }
 \usage{
 phmm(formula, random, data, subset, na.action, Sigma, varcov, NINIT,
-	VARSTART, MAXSTEP, CONVERG, emstep, Gbs, Gbsvar, verbose)
+	VARSTART, MAXSTEP, CONVERG, Gbs, Gbsvar, verbose)
 }
 \arguments{
   \item{formula}{model formula for the fixed part of the model, i.e. the
@@ -39,7 +39,6 @@ phmm(formula, random, data, subset, na.action, Sigma, varcov, NINIT,
   \item{VARSTART}{starting value of the variances of the random effects.}
   \item{MAXSTEP}{number of EM iterations.}
   \item{CONVERG}{iteration after which Gibbs sampling size changes from Gbs to Gbsvar.}
-  \item{emstep}{initial step value.}
   \item{Gbs}{initial Gibbs sampling size (until CONVERG iterations).}
   \item{Gbsvar}{Gibbs sampling size after CONVERG iterations.}
   \item{verbose}{Set to \code{TRUE} to print EM steps.}
@@ -58,9 +57,7 @@ The function produces an object of class "phmm" consisting of: \item{steps}{ a m
 The proportional hazards model with mixed effects is equipped to handle clustered survival data. The model generalizes the usual frailty model by allowing log-linearl multivariate random effects. The software can only handle random effects from a multivariate normal distribution. Maximum likelihood estimates of the regression parameters and variance components is gotten by EM algorithm, with Markov chain Monte Carlo (MCMC) used in the E-step.
 }
 
-\references{Cox, D.R. 1972. "Regression models and life tables" (with discussion). \emph{Journal of the Royal Statistical Society,} Series B; 34:187-220.
-
-Gilks, W. R. and Wild, P. (1992) Adaptive rejection sampling for Gibbs sampling. Applied Statistics 41, pp 337-348.
+\references{Gilks, W. R. and Wild, P. (1992) Adaptive rejection sampling for Gibbs sampling. Applied Statistics 41, pp 337-348.
 
 Vaida, F. and Xu, R. 2000. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324.
 

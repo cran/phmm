@@ -4,7 +4,7 @@
 PHMM conditional log-likelihood
 }
 \description{
-Function for computing log-likelihood conditional on the estimated random effects from the data and parameter estimates of a PHMM fit.
+Function for computing log-likelihood conditional on the estimated random effects from the data and specified parameter estimates of a PHMM.
 }
 \usage{
  phmm.cond.loglik(time, delta, z, beta, w, b)

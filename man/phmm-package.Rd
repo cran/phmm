@@ -3,10 +3,9 @@
 \docType{package}
 \title{
 Proportional Hazards with Mixed Model (PHMM)
-~~ package title ~~
 }
 \description{
-Fits proportional hazards model incorporating random effects using an EM agorithm using Markov Chain Monte Carlo at E-step.
+Fits proportional hazards model incorporating random effects. The function implements an EM agorithm using Markov Chain Monte Carlo at the E-step as described in Vaida and Xu (2000).
 }
 \details{
 \tabular{ll}{
@@ -42,8 +41,6 @@ Ronghui Xu, Michael Donohue
 Maintainer: Michael Donohue \email{mdonohue@ucsd.edu}
 }
 \references{ Vaida, F. and Xu, R. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324, 2000.
-
-Cox, D.R. "Regression models and life tables" (with discussion). \emph{Journal of the Royal Statistical Society,} Series B 1972; 34:187-220.
 }
 \keyword{ package }
 \seealso{ \code{\link[bayesSurv]{bayesSurv}}

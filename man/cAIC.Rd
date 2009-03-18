@@ -4,7 +4,7 @@
 Conditional Akaike Information Criterion for PHMM
 }
 \description{
-Function calculating the conditional Akaike information criterion (Vaida & Blanchard 2005) for PHMM fitted model objects, according to the formula \eqn{-2*log-likelihood + k*rho}{-2*log-likelihood + k*rho}, where \eqn{rho}{rho} represents the "effective degrees of freedom" of Hodges and Sargent (2001). The function uses the log-likelihood conditional on the estimated random effects; and trace of the "hat matrix", using the generalized linear mixed model formulation of PHMM, to estimate \eqn{rho}{rho}. The default k = 2, conforms with the usual AIC.}
+Function calculating the conditional Akaike information criterion (Vaida & Blanchard 2005) for PHMM fitted model objects, according to the formula \eqn{-2*log-likelihood + k*rho}{-2*log-likelihood + k*rho}, where \eqn{rho}{rho} represents the "effective degrees of freedom" in the sense of Hodges and Sargent (2001). The function uses the log-likelihood conditional on the estimated random effects; and trace of the "hat matrix", using the generalized linear mixed model formulation of PHMM, to estimate \eqn{rho}{rho}. The default k = 2, conforms with the usual AIC.}
 \usage{
  cAIC(object, ..., k = 2)
 }

@@ -1,6 +1,6 @@
 phmm <- function (formula, random, data = parent.frame(), subset, 
 	na.action = na.fail, Sigma="identity", varcov = "diagonal",
-	NINIT = 10, VARSTART=1, MAXSTEP=100, CONVERG=90, emstep=0, Gbs=100, Gbsvar=1000, verbose=FALSE) 
+	NINIT = 10, VARSTART=1, MAXSTEP=100, CONVERG=90, Gbs=100, Gbsvar=1000, verbose=FALSE) 
 {
 	call <- match.call(expand.dots = TRUE)
     m <- match.call(expand.dots = FALSE)
@@ -33,7 +33,7 @@ phmm <- function (formula, random, data = parent.frame(), subset,
 		NINIT=as.integer(10),
 		MAXSTEP=as.integer(MAXSTEP),
 		CONVERG=as.integer(CONVERG),
-		emstep = as.integer(emstep),
+		emstep = as.integer(0),
 		Gbs = as.integer(Gbs),
 		Gbsvar = as.integer(Gbsvar),
 		n = as.integer(des$n),
@@ -142,7 +142,6 @@ phmm.cond.loglik <- function(time, delta, z, beta, w, b){
           }))
     sum(ifelse(delta,1,0)*log(numerator/denominator))
 }
-
 
 linear.predictors <- function (x) UseMethod("linear.predictors")
 linear.predictors.phmm <- function(x){
