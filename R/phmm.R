@@ -218,7 +218,7 @@ cAIC <- function(object, ..., k=2){
 print.phmm <-
  function(x, digits = max(3, getOption("digits") - 3), ...)
 {
-  cat("Proportional Hazards Mixed-Effects Model fit by MCMC-EM\n")
+  cat("\nProportional Hazards Mixed-Effects Model fit by MCMC-EM\n")
   cat("  Model:", deparse(x$call$formula),"\n")
   cat("  Data:", deparse( x$call$data ), "\n")
   cat("  Log-likelihood:\n")
@@ -234,12 +234,13 @@ print.phmm <-
 #	print(x$var, ...)
   cat("\nNumber of Observations:", x$n)
   cat("\nNumber of Groups: ", nrow(x$bhat))
+  cat("\n\n")
 }
 
 print.summary.phmm <- 
  function(x, digits = max(3, getOption("digits") - 3), ...)
 {
-  cat("Proportional Hazards Mixed-Effects Model fit by MCMC-EM\n")
+  cat("\nProportional Hazards Mixed-Effects Model fit by MCMC-EM\n")
   cat("  Model:", deparse(x$call$formula),"\n")
   cat("  Data:", deparse( x$call$data ), "\n")
   cat("  Log-likelihood:\n")
@@ -255,6 +256,7 @@ print.summary.phmm <-
 #	print(x$var, ...)
 	cat("\nNumber of Observations:", x$n)
   cat("\nNumber of Groups: ", nrow(x$bhat))
+  cat("\n\n")
 }
 
 summary.phmm <-

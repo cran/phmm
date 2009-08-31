@@ -1,6 +1,6 @@
 #include <math.h>
 #define NRANSI
-#include "nrutil.h"
+#include <R.h>
 #define TINY 1.0e-20;
 
 void ludcmp(float **a, int n, int *indx, float *d)
@@ -9,13 +9,13 @@ void ludcmp(float **a, int n, int *indx, float *d)
 	float big,dum,sum,temp;
 	float *vv;
 
-	vv=vector(1,n);
+	vv=(double *)R_alloc(n,sizeof(double));
 	*d=1.0;
 	for (i=1;i<=n;i++) {
 		big=0.0;
 		for (j=1;j<=n;j++)
 			if ((temp=fabs(a[i][j])) > big) big=temp;
-		if (big == 0.0) nrerror("Singular matrix in routine ludcmp");
+		if (big == 0.0) error("Singular matrix in routine ludcmp");
 		vv[i]=1.0/big;
 	}
 	for (j=1;j<=n;j++) {
@@ -51,7 +51,6 @@ void ludcmp(float **a, int n, int *indx, float *d)
 			for (i=j+1;i<=n;i++) a[i][j] *= dum;
 		}
 	}
-	free_vector(vv,1,n);
 }
 #undef TINY
 #undef NRANSI
