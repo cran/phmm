@@ -83,6 +83,9 @@ phmm.design <- function (m, formula, random, data)
             if (lTR == 1 & attr(TermsR, "intercept")) {
                 randomInt <- TRUE
                 names.random <- character(0)
+                mR$formula <- TermsR
+                mR <- eval(mR, parent.frame())
+                W <- matrix(model.matrix(TermsR, mR), ncol=1)
             }
             else {
                 mR$formula <- TermsR
@@ -90,7 +93,7 @@ phmm.design <- function (m, formula, random, data)
                 if (attr(TermsR, "intercept")) {
                   randomInt <- TRUE
                   names.random <- colnames(model.matrix(TermsR, mR))[-1]
-				  W <- model.matrix(TermsR, mR)[-1,]
+				 W <- model.matrix(TermsR, mR)
                 }
                 else {
                   names.random <- colnames(model.matrix(TermsR, mR))

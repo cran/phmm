@@ -55,13 +55,19 @@ The function produces an object of class "phmm" consisting of: \item{steps}{ a m
 }
 \details{
 The proportional hazards model with mixed effects is equipped to handle clustered survival data. The model generalizes the usual frailty model by allowing log-linearl multivariate random effects. The software can only handle random effects from a multivariate normal distribution. Maximum likelihood estimates of the regression parameters and variance components is gotten by EM algorithm, with Markov chain Monte Carlo (MCMC) used in the E-step.
+
+Care must be taken to ensure the MCMC-EM algorithm has converged, as the algorithm stops after MAXSTEP iterations. No convergence criteria is implemented. It is advised to plot the estimates at each iteration using the \code{\link[phmm]{plot.phmm}} method. For more on MCMC-EM convergence see Booth \& Hobart (1999).
 }
 
-\references{Gilks, W. R. and Wild, P. (1992) Adaptive rejection sampling for Gibbs sampling. Applied Statistics 41, pp 337-348.
+\references{Gilks WR \& Wild P. (1992) Adaptive rejection sampling for Gibbs sampling. Applied Statistics 41, pp 337-348.
 
-Vaida, F. and Xu, R. 2000. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324.
+Vaida F \& Xu R. 2000. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324.
 
-Xu, R, Gamst, A, Donohue, M, Vaida, F, \& Harrington, DP. 2006. Using Profile Likelihood for Semiparametric Model Selection with Application to Proportional Hazards Mixed Models. \emph{Harvard University Biostatistics Working Paper Series,} Working Paper 43.
+Gamst A, Donohue M, & Xu R (2009). Asymptotic properties and empirical evaluation of the NPMLE in the proportional hazards mixed-effects model. Statistica Sinica, 19, 997.
+
+Xu R, Gamst A, Donohue M, Vaida F, \& Harrington DP. 2006. Using Profile Likelihood for Semiparametric Model Selection with Application to Proportional Hazards Mixed Models. \emph{Harvard University Biostatistics Working Paper Series,} Working Paper 43.
+
+Booth JG \& Hobert JP. Maximizing generalized linear mixed model likelihoods with an automated Monte Carlo EM algorithm. \emph{Journal of the Royal Statistical Society}, Series B 1999; 61:265-285.
 }
 \seealso{
 \code{\link[survival]{survfit}}, \code{\link[survival]{Surv}}.}
@@ -95,5 +101,6 @@ fit.phmm <- phmm(Surv(time, event)~Z1+Z2+cluster(cluster),
    ~-1+Z1+Z2, phmmdata, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
+plot(fit.phmm)
 }
 \keyword{survival}

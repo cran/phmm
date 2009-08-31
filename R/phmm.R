@@ -265,3 +265,13 @@ summary.phmm <-
 	class(object)<-"summary.phmm"
 	return(object)
 }
+
+plot.phmm <-
+ function(x, ...)
+{
+	x = as.data.frame(x$steps)
+	colnames(x) = make.names(colnames(x))
+	fm = paste(paste(colnames(x), collapse=' + '), "EM.Step", sep=" ~ ")
+	x$EM.Step = as.numeric(rownames(x))
+	xyplot(formula(fm), data=x, type="l", allow.multiple=TRUE, outer=TRUE, scales="free", ...)
+}
