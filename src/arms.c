@@ -222,7 +222,7 @@ int arms (double *xinit, int ninit, double *xl, double *xr,
       /* point accepted */
       xsamp[msamp++] = pwork.x;
     } else if (i != 0) {
-      printf("envelope error - violation without metropolis\n");
+      error("envelope error - violation without metropolis\n");
       return 2000;
     }  
   } while (msamp < nsamp);
@@ -437,7 +437,6 @@ void invert(double prob, ENVELOPE *env, POINT *p)
     }
   }
 
-/* R IS CRASHING HERE */
   /* guard against imprecision yielding point outside interval */
   if ((p->x < xl) || (p->x > xr)){
      printf("xl = %e\n", xl);
@@ -450,7 +449,7 @@ void invert(double prob, ENVELOPE *env, POINT *p)
 	    printf("p->x > xr\n");
 		printf("p->x - xr = %e\n", p->x - xr);
         }
-     exit(1);
+     error("ARMS error code 1");
    }
 
   return;
@@ -605,7 +604,7 @@ int update(ENVELOPE *env, POINT *p, FUNBAG *lpdf, METROPOLIS *metrop)
     q->pl->pr = q;
   } else {
     /* this should be impossible */
-    exit(10);
+    error("ARMS error code 10");
   }
 
   /* now adjust position of q within interval if too close to an endpoint */
@@ -705,7 +704,7 @@ int meet (POINT *q, ENVELOPE *env, METROPOLIS *metrop)
 
   if(q->f){
     /* this is not an intersection point */
-    exit(30);
+    error("ARMS error code 30");
   }
 
   /* calculate coordinates of point of intersection */
@@ -789,12 +788,12 @@ int meet (POINT *q, ENVELOPE *env, METROPOLIS *metrop)
     q->y = q->pr->y - gr * (q->pr->x - q->x);
   } else {
     /* gradient on neither side - should be impossible */
-    exit(31);
+    error("ARMS error code 31");
   }
   if(((q->pl != NULL) && (q->x < q->pl->x)) ||
      ((q->pr != NULL) && (q->x > q->pr->x))){
     /* intersection point outside interval (through imprecision) */
-    exit(32);
+    error("ARMS error code 32");
   }
   /* successful exit : intersection has been calculated */
   return 0;
@@ -811,7 +810,7 @@ double area(POINT *q)
 
   if(q->pl == NULL){
     /* this is leftmost point in envelope */
-    exit(1);
+    error("ARMS error code 1");
   } else if(q->pl->x == q->x){
     /* interval is zero length */
     a = 0.;

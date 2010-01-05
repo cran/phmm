@@ -9,7 +9,7 @@ void ludcmp(float **a, int n, int *indx, float *d)
 	float big,dum,sum,temp;
 	float *vv;
 
-	vv=(double *)R_alloc(n,sizeof(double));
+	vv=(float *)R_alloc(n,sizeof(float));
 	*d=1.0;
 	for (i=1;i<=n;i++) {
 		big=0.0;

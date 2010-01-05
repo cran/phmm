@@ -4,7 +4,7 @@
 PHMM Design
 }
 \description{
-Internal function for extracting design matrix from call to \code{phmm}. Code adapted from \code{bayesurvreg.design} function in the \code{bayesSurv} package.
+Internal function for extracting design matrix from call to \code{phmm}. Code adapted from \code{bayessurvreg1.help} function in the \code{bayesSurv} package.
 }
 \usage{
 phmm.design(m, formula, random, data)
@@ -63,7 +63,7 @@ phmm.design(m, formula, random, data)
     model, the first component of this vector is equal to "(Intercept)"}
   }  
 \seealso{
-\code{\link{phmm}}, \code{\link[bayesSurv]{phmm}}.}
+\code{\link{phmm}}, \code{\link[bayesSurv]{bayessurvreg1.help}}.}
 \references{
 Arnost Komarek (2007). bayesSurv: Bayesian Survival Regression with Flexible Error and Random Effects Distributions. R package version 0.5-9. http://www.karlin.mff.cuni.cz/~komarek
 }

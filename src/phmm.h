@@ -78,6 +78,7 @@ double Invmatrix( double **a, int N, int M, double **y );
 void mylubksb(double **, int n, int *indx, double *);
 void myludcmp(double **, int n, int *indx, double *);
 double **dmatrix2(double *array, int ncol, int nrow);
+float **matrix(long nrl, long nrh, long ncl, long nch);
 
 
 extern float ran2( long * );

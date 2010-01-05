@@ -534,8 +534,7 @@ void Estep(int ncov, int nreff, double *Sigma[nreff+1], int nobs, int NINIT, int
 									   &qcent, &xcent, ncent, &neval);
 							
 							if (err>0) {
-								Rprintf("error code = %d\n",err);
-								exit(1);
+								error("ARMS error code = %d\n",err);
 							}
 							
 							/** Rprintf("emstep = %d, cluster = %d, iteration = %d, b = %.4f\n",
@@ -840,8 +839,7 @@ double Importance(int ncov, int nreff, double *Sigma[nreff+1],
 						   &qcent, &xcent, ncent, &neval);
 				
 				if (err>0) {
-					printf("error code = %d\n",err);
-					exit(1);
+					error("ARMS error code = %d\n",err);
           		}
 				
           		for (l=clust_start[i]; l<clust_start[i+1]; l++) 

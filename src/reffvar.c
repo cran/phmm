@@ -99,8 +99,7 @@ void Var(int Gbs, int nobs, int nreff, int ncov, int NINIT, float*betahat,
 						   &qcent, &xcent, ncent, &neval);
 				
 				if (err>0) {
-					Rprintf("error code = %d\n",err);
-					exit(1);
+					error("ARMS error code = %d in reffvar.c\n",err);
 				}
 				
 				for (l=clust_start[i]; l<clust_start[i+1]; l++) 

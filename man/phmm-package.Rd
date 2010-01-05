@@ -43,7 +43,7 @@ Maintainer: Michael Donohue \email{mdonohue@ucsd.edu}
 \references{ Vaida, F. and Xu, R. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324, 2000.
 }
 \keyword{ package }
-\seealso{ \code{\link[bayesSurv]{bayesSurv}}
+\seealso{ \code{\link[bayesSurv]{bayessurvreg1}}
 }
 \examples{
 N <- 100
