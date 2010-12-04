@@ -29,19 +29,16 @@ Whitehead, J. (1980). Fitting Cox's Regression Model to Survival Data using GLIM
 
 \seealso{\code{\link{phmm}}, \code{\link{traceHat}}}
 \examples{\dontrun{
-N <- 100
-B <- 100
-n <- 50
-nclust <- 5
+n <- 50      # total sample size
+nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
 beta0 <- c(1,2)
 set.seed(13)
 #generate phmm data set
-Z <-cbind(Z1=sample(0:1,n,replace=TRUE),
-          Z2=sample(0:1,n,replace=TRUE),
-          Z3=sample(0:1,n,replace=TRUE))
-b <- cbind(rep(rnorm(nclust), each=n/nclust),
-           rep(rnorm(nclust), each=n/nclust))
+Z <- cbind(Z1=sample(0:1,n,replace=TRUE),
+           Z2=sample(0:1,n,replace=TRUE),
+           Z3=sample(0:1,n,replace=TRUE))
+b <- cbind(rep(rnorm(nclust),each=n/nclust),rep(rnorm(nclust),each=n/nclust))
 Wb <- matrix(0,n,2)
 for( j in 1:2) Wb[,j] <- Z[,j]*b[,j]
 Wb <- apply(Wb,1,sum)
@@ -50,23 +47,23 @@ C <- runif(n,0,1)
 time <- ifelse(T<C,T,C)
 event <- ifelse(T<=C,1,0)
 mean(event)
-phmmdata <- data.frame(Z)
-phmmdata$cluster <- clusters
-phmmdata$time <- time
-phmmdata$event <- event
+phmmd <- data.frame(Z)
+phmmd$cluster <- clusters
+phmmd$time <- time
+phmmd$event <- event
 
-fit.phmm <- phmm(Surv(time, event)~Z1+Z2+cluster(cluster),
-   ~-1+Z1+Z2, phmmdata, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
+fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster), 
+   phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 
 # Same data can be fit with lmer,
 # though the correlation structures are different.
-poisphmmdata <- pseudoPoisPHMM(fit.phmm)
+poisphmmd <- pseudoPoisPHMM(fit.phmm)
 
 library(lme4)
 fit.lmer <- lmer(m~-1+as.factor(time)+z1+z2+
   (-1+w1+w2|cluster)+offset(log(N)), 
-  poisphmmdata, family=poisson)
+  as.data.frame(as(poisphmmd, "matrix")), family=poisson)
 
 fixef(fit.lmer)[c("z1","z2")]
 fit.phmm$coef

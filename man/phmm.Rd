@@ -6,26 +6,18 @@ Fits a proportional hazards regression model incorporating random effects.
 The function implements an EM algorithm using Markov Chain Monte Carlo (MCMC) at the E-step as described in Vaida and Xu (2000).
 }
 \usage{
-phmm(formula, random, data, subset, na.action, Sigma, varcov, NINIT,
-	VARSTART, MAXSTEP, CONVERG, Gbs, Gbsvar, verbose)
+phmm(formula, data, subset, na.action = na.fail, 
+  Sigma = "identity", varcov = "diagonal", NINIT = 10, 
+  VARSTART = 1, MAXSTEP = 100, CONVERG = 90, Gbs = 100, 
+  Gbsvar = 1000, verbose = FALSE, maxtime = 120, random)
 }
 \arguments{
-  \item{formula}{model formula for the fixed part of the model, i.e. the
-    part that specifies \eqn{\beta'x_{ij}}{beta'x[ij]}. See
-    \code{\link[survival]{survreg}} for further details. Intercept is implicitely
+  \item{formula}{model formula for the fixed and random components of the model
+    (as in \code{\link[lme4]{lmer}}). An intercept is implicitly
     included in the model by estimation of the error distribution. As a
-    consequence \code{-1} in the model formula does not have any effect
-    on the model. The left-hand side of the \code{formula} must be an object
-    created using \code{\link[survival]{Surv}}.
-	If \code{random} is used then the formula must contain
-    an identification of clusters in the form \code{cluster(id)}, where
-    \code{id} is a name of the variable that determines clusters.
-  }
-  \item{random}{formula for the random part of the model, i.e. the
-    part that specifies \eqn{w_{ij}'b_{i}}{w[ij]'b[i]}. If omitted,
-    no random part is included in the model. E.g. to specify the model with a
-    random intercept, say \code{random=~1}.
-  }
+    consequence \code{-1} in the model formula does not have any effect. 
+    The left-hand side of the \code{formula} must be a
+    \code{\link[survival]{Surv}} object.}
   \item{data}{optional data frame in which to interpret the variables
     occuring in the formulas.}
   \item{subset}{subset of the observations to be used in the fit.}
@@ -42,6 +34,9 @@ phmm(formula, random, data, subset, na.action, Sigma, varcov, NINIT,
   \item{Gbs}{initial Gibbs sampling size (until CONVERG iterations).}
   \item{Gbsvar}{Gibbs sampling size after CONVERG iterations.}
   \item{verbose}{Set to \code{TRUE} to print EM steps.}
+  \item{maxtime}{maximum time in seconds, before aborting EM iterations. Defaults to 120 seconds.}
+  \item{random}{The argument \code{random} is no longer used. Random components are
+    are expressed in \code{formula}.}
 }
 \value{
 The function produces an object of class "phmm" consisting of: \item{steps}{ a matrix of estimates at each EM step;}
@@ -72,10 +67,8 @@ Booth JG \& Hobert JP. Maximizing generalized linear mixed model likelihoods wit
 \seealso{
 \code{\link[survival]{survfit}}, \code{\link[survival]{Surv}}.}
 \examples{
-N <- 100
-B <- 100
-n <- 50
-nclust <- 5
+n <- 50      # total sample size
+nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
 beta0 <- c(1,2)
 set.seed(13)
@@ -92,13 +85,13 @@ C <- runif(n,0,1)
 time <- ifelse(T<C,T,C)
 event <- ifelse(T<=C,1,0)
 mean(event)
-phmmdata <- data.frame(Z)
-phmmdata$cluster <- clusters
-phmmdata$time <- time
-phmmdata$event <- event
+phmmd <- data.frame(Z)
+phmmd$cluster <- clusters
+phmmd$time <- time
+phmmd$event <- event
 
-fit.phmm <- phmm(Surv(time, event)~Z1+Z2+cluster(cluster),
-   ~-1+Z1+Z2, phmmdata, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
+fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster), 
+   phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
 plot(fit.phmm)

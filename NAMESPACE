@@ -2,14 +2,16 @@ useDynLib(phmm)
 
 importFrom(survival, Surv)
 importFrom(stats, AIC)
+import(Matrix)
 
-export(phmm, phmm.design, loglik.cond, linear.predictors, 
-       pseudoPoisPHMM, traceHat, traceHat.default, cAIC,
-       phmm.cond.loglik)
+export(phmm, loglik.cond, linear.predictors, 
+       pseudoPoisPHMM, traceHat, 
+       cAIC, phmm.cond.loglik)
 
 S3method(loglik.cond, phmm)
 S3method(linear.predictors, phmm)
 S3method(pseudoPoisPHMM, phmm)
+S3method(pseudoPoisPHMM, coxph)
 S3method(AIC, phmm)
 
 S3method(print, phmm)

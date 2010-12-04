@@ -15,6 +15,7 @@ z=covariates (fixed effect), w= r.eff. covariates */
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 #include "phmm.h"
+#include "time.h"
 
 void phmm(double *x, double *zv, double *wv, int *delta,
 		  int *cluster,
@@ -22,6 +23,7 @@ void phmm(double *x, double *zv, double *wv, int *delta,
 		  double *sSigma, double *sinvSigma, double *sdetSigma,		  
 		  int *sNINIT, 
 		  int *sMAXSTEP,
+		  double *smaxtime,
 		  int *sCONVERG,
 		  int *semstep,
 		  int *sGbs,
@@ -47,6 +49,7 @@ void phmm(double *x, double *zv, double *wv, int *delta,
 	int varcov = *svarcov;
     int NINIT = *sNINIT;
     int MAXSTEP = *sMAXSTEP;
+    double maxtime = *smaxtime;
     int CONVERG = *sCONVERG;
     int emstep = *semstep;
     int Gbs = *sGbs;
@@ -173,7 +176,7 @@ void phmm(double *x, double *zv, double *wv, int *delta,
     EM( ncov, nreff, Sigma, nobs, omega,
         betahat, sum0, sum1, z, delta,
         sum2, lambda, Lambda, Lambexp,
-        steps, NINIT, emstep, MAXSTEP, nclust,
+        steps, NINIT, emstep, MAXSTEP, maxtime, nclust,
         sumb, sumbb, B, clust_start,
         ww, Gbs, Gbsvar, a, rank, CONVERG, bhat,
         sdbhat, sumv, invSigma, eb, v, condvar, detSigma, 
@@ -301,7 +304,7 @@ void EM(int ncov, int nreff, double *Sigma[nreff+1],
         int nobs, double *omega,
         float *betahat, double *sum0, double *sum1[ncov+1], double **z, int *delta,
         double *sum2[ncov+1][ncov+1], double *lambda, double *Lambda, double *Lambexp,
-        double **steps, int NINIT, int emstep, int MAXSTEP, int nclust,
+        double **steps, int NINIT, int emstep, int MAXSTEP, double maxtime, int nclust,
         double **sumb, double **sumbb, double **B, int *clust_start,
         double **ww, int Gbs, int Gbsvar, double **a, int *rank, int CONVERG, double **bhat,
         double **sdbhat, double *sumv[nreff+1][nreff+1], double *invSigma[nreff+1], 
@@ -309,8 +312,11 @@ void EM(int ncov, int nreff, double *Sigma[nreff+1],
 		double detSigma, int verbose, int varcov )
 {
 	int i, j, d, dd;
-	double beta[ncov+1], temp_G[nreff+1][nreff+1];
+	double beta[ncov+1], temp_G[nreff+1][nreff+1], dif;
+	time_t start,end;
 	
+	time (&start);
+
 	for ( i=1; i<=nobs; i++ )
 		omega[i]=1;  /* omega is expect. of exp(b*w) */
 	for (d=1; d<=ncov; d++)
@@ -319,84 +325,90 @@ void EM(int ncov, int nreff, double *Sigma[nreff+1],
 	Betahat(betahat, ncov, nobs, omega, sum0,
 			sum1, z, delta, sum2,
 			lambda, Lambda, Lambexp);   /* starting value for betahat and lambda (Cox) */
-			if(verbose){
-				Rprintf("\nstep  ");
-				for (d=1; d<=ncov; d++)   Rprintf(" beta%d ", d);
-				for ( d=1; d<=nreff; d++ )   Rprintf(" var%d ", d);
-				
-				/*if(nreff>1)
-					for ( d=1; d<=nreff; d++ )
-					for ( dd=1; dd<=nreff; dd++ )
-					if (d<dd) Rprintf("   cov%d%d ", d, dd);*/
-				Rprintf(":\n   0 ");
-			}
-			for (d=1; d<=ncov; d++){
-				if(verbose) Rprintf("%.4f ", betahat[d]);
-				steps[emstep][d-1]=betahat[d];
-			}
-			for ( d=1; d<=nreff; d++ ){
-				if(verbose) Rprintf("%.4f ", Sigma[d][d]);
-				steps[emstep][ncov+d-1]=Sigma[d][d];
-			}
-			/*if(nreff>1)
+	
+	if(verbose){
+		Rprintf("\nstep  ");
+		for (d=1; d<=ncov; d++)   Rprintf(" beta%d ", d);
+		for ( d=1; d<=nreff; d++ )   Rprintf(" var%d ", d);
+		
+		/*if(nreff>1)
 			for ( d=1; d<=nreff; d++ )
 			for ( dd=1; dd<=nreff; dd++ )
-			if (d<dd){
-				if(verbose) Rprintf("%.4f ", Sigma[d][dd]);
-				steps[emstep][ncov+d-1]=Sigma[d][dd];
-			}*/
-			if(verbose) Rprintf("\n");
+			if (d<dd) Rprintf("   cov%d%d ", d, dd);*/
+		Rprintf(":\n   0 ");
+	}
+	for (d=1; d<=ncov; d++){
+		if(verbose) Rprintf("%.4f ", betahat[d]);
+		steps[emstep][d-1]=betahat[d];
+	}
+	for ( d=1; d<=nreff; d++ ){
+		if(verbose) Rprintf("%.4f ", Sigma[d][d]);
+		steps[emstep][ncov+d-1]=Sigma[d][d];
+	}
+	/*if(nreff>1)
+	for ( d=1; d<=nreff; d++ )
+	for ( dd=1; dd<=nreff; dd++ )
+	if (d<dd){
+		if(verbose) Rprintf("%.4f ", Sigma[d][dd]);
+		steps[emstep][ncov+d-1]=Sigma[d][dd];
+	}*/
+	if(verbose) Rprintf("\n");
 			
-			while (1) {
-				/* Test for EM convergence: */
-				emstep++;
-				if (emstep > MAXSTEP)  {
-					/*if(verbose) Rprintf("\n");
-					if(verbose) Rprintf("\n E(b) and sd:\n");*/
-					for (i=1; i<=nclust; i++) {
-						for (d=1; d<=nreff; d++){
-							/*if(verbose) Rprintf("%f %f    ", sumbb[d][i]/Gbs, sqrt(sumb[d][i]/Gbs - (sumbb[d][i]/Gbs)*(sumbb[d][i]/Gbs)) );*/
-							bhat[i-1][d-1]=sumbb[d][i]/Gbs;
-							sdbhat[i-1][d-1]=sqrt(sumb[d][i]/Gbs - (sumbb[d][i]/Gbs)*(sumbb[d][i]/Gbs));
-						}
-						/*if(verbose) Rprintf("\n");*/
-					}
-					return;
+	while (1) {
+		/* Test for EM convergence: */
+		emstep++;
+		if (emstep > MAXSTEP)  {
+			/*if(verbose) Rprintf("\n");
+			if(verbose) Rprintf("\n E(b) and sd:\n");*/
+			for (i=1; i<=nclust; i++) {
+				for (d=1; d<=nreff; d++){
+					/*if(verbose) Rprintf("%f %f    ", sumbb[d][i]/Gbs, sqrt(sumb[d][i]/Gbs - (sumbb[d][i]/Gbs)*(sumbb[d][i]/Gbs)) );*/
+					bhat[i-1][d-1]=sumbb[d][i]/Gbs;
+					sdbhat[i-1][d-1]=sqrt(sumb[d][i]/Gbs - (sumbb[d][i]/Gbs)*(sumbb[d][i]/Gbs));
 				}
-				/* Gibbs E-step: */
-				
-				Estep(ncov, nreff, Sigma, nobs, NINIT, nclust,
-					  sumb, sumbb, sumv, B, ww, Gbs, rank,
-					  CONVERG, clust_start, omega, Lambexp,
-					  a, invSigma, eb, v, condvar, detSigma, varcov );     /* also updates Sigma (M-step) */
-					  
-					  /* M-step for beta */
-					  Betahat(betahat, ncov, nobs, omega, sum0,
-							  sum1, z, delta, sum2, lambda, Lambda, Lambexp);   /* updates betahat and lambda */
-							  
-							  /* Print some results: */
-							  if(verbose) Rprintf("%4d ", emstep);
-							  for (d=1; d<=ncov; d++){
-								  if(verbose) Rprintf("%.4f ", betahat[d]);
-								  steps[emstep][d-1]=betahat[d];
-							  }
-							  for ( d=1; d<=nreff; d++ ){
-								  if(verbose) Rprintf("%.4f ", Sigma[d][d]);
-								  steps[emstep][ncov+d-1]=Sigma[d][d];
-							  }
-							  /*if(nreff>1)
-							  for ( d=1; d<=nreff; d++ )
-							  for ( dd=1; dd<=nreff; dd++ )
-							  if (d<dd){
-								  if(verbose) Rprintf("%.4f ", Sigma[d][dd]);
-								  steps[emstep][ncov+d-1]=Sigma[d][dd];
-							  }*/
-							  if(verbose) Rprintf("\n");
-							  
-							  /* Update Gbs */
-							  if (emstep > CONVERG)
-							  Gbs = Gbsvar;
+				/*if(verbose) Rprintf("\n");*/
 			}
+			return;
+		}
+		/* Gibbs E-step: */
+		
+		Estep(ncov, nreff, Sigma, nobs, NINIT, nclust,
+			  sumb, sumbb, sumv, B, ww, Gbs, rank,
+			  CONVERG, clust_start, omega, Lambexp,
+			  a, invSigma, eb, v, condvar, detSigma, varcov );     /* also updates Sigma (M-step) */
+			  
+		/* M-step for beta */
+		Betahat(betahat, ncov, nobs, omega, sum0,
+				sum1, z, delta, sum2, lambda, Lambda, Lambexp);   /* updates betahat and lambda */
+					  
+		/* Print some results: */
+		if(verbose) Rprintf("%4d ", emstep);
+		for (d=1; d<=ncov; d++){
+			if(verbose) Rprintf("%.4f ", betahat[d]);
+			steps[emstep][d-1]=betahat[d];
+		}
+		for ( d=1; d<=nreff; d++ ){
+			if(verbose) Rprintf("%.4f ", Sigma[d][d]);
+			steps[emstep][ncov+d-1]=Sigma[d][d];
+		}
+		/*if(nreff>1)
+		 for ( d=1; d<=nreff; d++ )
+		 for ( dd=1; dd<=nreff; dd++ )
+		 if (d<dd){
+		 if(verbose) Rprintf("%.4f ", Sigma[d][dd]);
+		 steps[emstep][ncov+d-1]=Sigma[d][dd];
+		 }*/
+		if(verbose) Rprintf("\n");
+		
+		time (&end);
+		dif = difftime (end,start);
+		if(dif > maxtime)
+			emstep = CONVERG++;
+		
+		/* Update Gbs */
+		if (emstep > CONVERG)
+			Gbs = Gbsvar;
+	}
 }   /* end EM() */
 
 
@@ -653,30 +665,30 @@ void Likelihood(int ncov, int nreff, double *Sigma[nreff+1],
 			if (nreff==1) {
 				uu[1] = gasdev(idum)*sqrt(v[1][i]) + eb[1][i]; 
 				logratio = -(uu[1]-eb[1][i])*(uu[1]-eb[1][i])/2/v[1][i] 
-					-log(2*PI*v[1][i])/2 -logJointprob(uu, i, ncov, nreff, Sigma,
-													   clust_start, invSigma, rank, ww, zz,
-													   ddelta, betahat, z, lambda, Lambexp);   /*nreff=1 only*/
+				-log(2*PI*v[1][i])/2 -logJointprob(uu, i, ncov, nreff, Sigma,
+												   clust_start, invSigma, rank, ww, zz,
+												   ddelta, betahat, z, lambda, Lambexp);   /*nreff=1 only*/
 			} /*end if*/
-													   if (nreff==2) {
-														   uu[1] = gasdev(idum)*sqrt(condvar[1][1][i]) + eb[1][i]; 
-														   uu[2] = gasdev(idum)*sqrt(condvar[2][2][i] - 
-																					 condvar[1][2][i]*condvar[1][2][i]/condvar[1][1][i]) + eb[2][i] 
-															   +(uu[1]-eb[1][i])*condvar[1][2][i]/condvar[1][1][i];
-														   temp = 0;
-														   for (d=1; d<=nreff; d++) {
-															   temp += (uu[d]-eb[d][i])*(uu[d]-eb[d][i])*invcondv[d][d][i];
-															   for (dd=1; dd<d; dd++)   
-																   temp += 
-																	   2*(uu[d]-eb[d][i])*(uu[dd]-eb[dd][i])*invcondv[d][dd][i];
-														   }
-														   logratio = -temp/2 -nreff*log(2*PI)/2 - log(detcondv[i])/2 
-															   -logJointprob(uu, i, ncov, nreff, Sigma,
-																			 clust_start, invSigma, rank, ww, zz,
-																			 ddelta, betahat, z, lambda, Lambexp);	
-													   } /*end if*/
-	  incrB += 1/( 1+exp( laplace[i] + logratio ) );
+			if (nreff==2) {
+				uu[1] = gasdev(idum)*sqrt(condvar[1][1][i]) + eb[1][i]; 
+				uu[2] = gasdev(idum)*sqrt(condvar[2][2][i] - 
+										  condvar[1][2][i]*condvar[1][2][i]/condvar[1][1][i]) + eb[2][i] 
+				+(uu[1]-eb[1][i])*condvar[1][2][i]/condvar[1][1][i];
+				temp = 0;
+				for (d=1; d<=nreff; d++) {
+					temp += (uu[d]-eb[d][i])*(uu[d]-eb[d][i])*invcondv[d][d][i];
+					for (dd=1; dd<d; dd++)   
+						temp += 
+						2*(uu[d]-eb[d][i])*(uu[dd]-eb[dd][i])*invcondv[d][dd][i];
+				}
+				logratio = -temp/2 -nreff*log(2*PI)/2 - log(detcondv[i])/2 
+				-logJointprob(uu, i, ncov, nreff, Sigma,
+							  clust_start, invSigma, rank, ww, zz,
+							  ddelta, betahat, z, lambda, Lambexp);	
+			} /*end if*/
+			incrB += 1/( 1+exp( laplace[i] + logratio ) );
 		}  /*end g*/
-    	lbridge += log(incrB/Gbsvar);
+		lbridge += log(incrB/Gbsvar);
 	}  /*end i*/
    
    *plbridge = lbridge;

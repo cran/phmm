@@ -1,6 +1,5 @@
 \name{ traceHat}
 \alias{ traceHat}
-\alias{ traceHat.default}
 \title{
 Trace of the "hat" matrix from PHMM-MCEM fit
 }
@@ -9,16 +8,10 @@ Compute trace of the ``hat'' matrix from PHMM-MCEM fit using a direct approximat
 }
 \usage{
  traceHat(x, method="direct")
- traceHat.default(z, w, cluster, Sigma, fitted)
 }
 \arguments{
 \item{x}{an object of class \code{phmm},}
-\item{method}{acceptable values are \code{"direct"}, \code{"pseudoPois"}, \code{"HaLee"} or \code{coxph} (no random effects),}
-\item{z}{matrix of fixed effects covariates,}
-\item{w}{matrix of random effects covariates,}
-\item{cluster}{integer valued cluster indices,}
-\item{Sigma}{variance-covariance matrix of fit,}
-\item{fitted}{linear predictors (fixed and random).}
+\item{method}{acceptable values are \code{"direct"}, \code{"pseudoPois"}, or \code{"HaLee"},}
 }
 \value{
 The trace of the "hat" matrix which can be used as a measure of complexity of the model.
@@ -36,10 +29,8 @@ Whitehead, J. (1980). Fitting Cox's Regression Model to Survival Data using GLIM
 \seealso{\code{\link{phmm}}, \code{\link{AIC.phmm}}}
 
 \examples{\dontrun{
-N <- 100
-B <- 100
-n <- 50
-nclust <- 5
+n <- 50      # total sample size
+nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
 beta0 <- c(1,2)
 set.seed(13)
@@ -56,23 +47,23 @@ C <- runif(n,0,1)
 time <- ifelse(T<C,T,C)
 event <- ifelse(T<=C,1,0)
 mean(event)
-phmmdata <- data.frame(Z)
-phmmdata$cluster <- clusters
-phmmdata$time <- time
-phmmdata$event <- event
+phmmd <- data.frame(Z)
+phmmd$cluster <- clusters
+phmmd$time <- time
+phmmd$event <- event
 
-fit.phmm <- phmm(Surv(time, event)~Z1+Z2+cluster(cluster),
-   ~-1+Z1+Z2, phmmdata, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
+fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster), 
+   phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 
 # Same data can be fit with lmer,
 # though the correlation structures are different.
-poisphmmdata <- pseudoPoisPHMM(fit.phmm)
+poisphmmd <- pseudoPoisPHMM(fit.phmm)
 
 library(lme4)
 fit.lmer <- lmer(m~-1+as.factor(time)+z1+z2+
   (-1+w1+w2|cluster)+offset(log(N)), 
-  poisphmmdata, family=poisson)
+  as.data.frame(as(poisphmmd, "matrix")), family=poisson)
 
 fixef(fit.lmer)[c("z1","z2")]
 fit.phmm$coef

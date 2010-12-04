@@ -46,10 +46,8 @@ Maintainer: Michael Donohue \email{mdonohue@ucsd.edu}
 \seealso{ \code{\link[bayesSurv]{bayessurvreg1}}
 }
 \examples{
-N <- 100
-B <- 100
-n <- 50
-nclust <- 5
+n <- 50      # total sample size
+nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
 beta0 <- c(1,2)
 set.seed(13)
@@ -66,13 +64,13 @@ C <- runif(n,0,1)
 time <- ifelse(T<C,T,C)
 event <- ifelse(T<=C,1,0)
 mean(event)
-phmmdata <- data.frame(Z)
-phmmdata$cluster <- clusters
-phmmdata$time <- time
-phmmdata$event <- event
+phmmd <- data.frame(Z)
+phmmd$cluster <- clusters
+phmmd$time <- time
+phmmd$event <- event
 
-fit.phmm <- phmm(Surv(time, event)~Z1+Z2+cluster(cluster),
-   ~-1+Z1+Z2, phmmdata, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
+fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster), 
+   phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
 }
