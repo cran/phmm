@@ -874,10 +874,10 @@ double Importance(int ncov, int nreff, double *Sigma[nreff+1],
 		                      clust_start, invSigma, rank, ww, zz,
 		                      ddelta, betahat, z, lambda, Lambexp);	
 		temp = exp( laplace[i] + logratio );
-/*printf("%f ", temp);*/
+/*Rprintf("%f ", temp);*/
 		incrA += temp;
 		incrC += 1/( 1+1/temp );
-/*printf("%f ", incrA);*/
+/*Rprintf("%f ", incrA);*/
 		}	/* for g */
 
 	import -= log( incrA/Gbsvar );

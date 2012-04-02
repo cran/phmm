@@ -217,7 +217,7 @@ int arms (double *xinit, int ninit, double *xl, double *xr,
 
     /* perform rejection (and perhaps metropolis) tests */
     i = test(env,&pwork,&lpdf,metrop);
-/*printf("i=%i\n", i);*/
+/*Rprintf("i=%i\n", i);*/
     if(i == 1){
       /* point accepted */
       xsamp[msamp++] = pwork.x;
@@ -341,7 +341,7 @@ int initial (double *xinit, int ninit, double xl, double xr, int npoint,
   q = env->p;
   for (j=0; j<mpoint; j=j+2, q=q+2){
     if(meet(q,env,metrop)){
-      printf("envelope violation without metropolis\n");
+      Rprintf("envelope violation without metropolis\n");
       return 2000;
     }
   }
@@ -439,15 +439,15 @@ void invert(double prob, ENVELOPE *env, POINT *p)
 
   /* guard against imprecision yielding point outside interval */
   if ((p->x < xl) || (p->x > xr)){
-     printf("xl = %e\n", xl);
-	 printf("xr = %e\n", xr);
-	 printf("p->x = %e\n", p->x);
+     Rprintf("xl = %e\n", xl);
+	 Rprintf("xr = %e\n", xr);
+	 Rprintf("p->x = %e\n", p->x);
 	 if ((p->x < xl)){
-	    printf("p->x < xl\n");
+	    Rprintf("p->x < xl\n");
 		}
 	 if ((p->x > xr)){
-	    printf("p->x > xr\n");
-		printf("p->x - xr = %e\n", p->x - xr);
+	    Rprintf("p->x > xr\n");
+		Rprintf("p->x - xr = %e\n", p->x - xr);
         }
      error("ARMS error code 1");
    }

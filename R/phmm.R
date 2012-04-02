@@ -6,7 +6,7 @@ phmm <- function (formula, data, subset,
     Call <- match.call()
 
     if (!missing(random)) {
-        warning("The 'random' argument of phmm is depreciated")
+        warning("The 'random' argument of phmm is deprecated")
         if (class(random) != 'formula' || length(random) !=2) 
             stop("Invalid random formula")
         j <- length(formula)   #will be 2 or 3, depending on if there is a y

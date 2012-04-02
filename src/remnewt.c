@@ -17,7 +17,7 @@ void mnewt(int n, int ntrial, float *x, float tolx, float tolf,
     fvec=(float *)R_alloc(n, sizeof(float));
     fjac=matrix(1,n,1,n);
     errx=tolx+1;
-    for (k=1;k<=ntrial;k++) {            /*printf("trial no.1");*/
+    for (k=1;k<=ntrial;k++) {            /*Rprintf("trial no.1");*/
             usrfun(x,n,fvec,fjac,nobs,omega,sum0,sum1,z,delta,sum2);
         if (errx <= tolx) return;
         errf=0.0;
@@ -44,7 +44,7 @@ void usrfun(float *beta, int n, float *score, float **fjac,
    int i, j, k;
    double temp;
 
-/** printf("usrfun "); **/
+/** Rprintf("usrfun "); **/
    for (j=1; j<=n; j++)   {
       score[j]=0;
       for (k=1; k<=n; k++)   fjac[j][k]=0;

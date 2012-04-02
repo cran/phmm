@@ -1,9 +1,17 @@
-cAIC <- function(object, method = "direct", ..., k = 2){
+cAIC <- function(object, ..., k = 2) UseMethod("cAIC")
+
+cAIC.phmm <- function(object, method = "direct", ..., k = 2){
   as.numeric(-2*object$loglik["Conditional"])+k*traceHat(object, method = method)
 }
 
+cAIC.coxph <- function(object, ..., k = 2){
+	-2*object$loglik[2] + k*length(object$coef)
+}
+
+AIC.coxph <- cAIC.coxph
+
 traceHat <- function(x, method = "direct"){ 
-  if(! method %in% c("direct", "pseudoPois", "HaLee")) 
+  if(! method %in% c("direct", "pseudoPois", "HaLee", "approx")) 
     stop("Undefined traceHat method.")
 
     time <- x$Y[, 1]; delta <- x$Y[, 2]; z <- x$Z
@@ -13,7 +21,7 @@ traceHat <- function(x, method = "direct"){
     cluster <- as.numeric(as.character(x$cluster))
     nclust <- length(unique(cluster))
 
-  if(method%in%c("direct", "HaLee")){
+  if(method%in%c("direct", "HaLee", "approx")){
     # use Ha, Lee, MacKenzie 2007 framework
     # to compute traceHat directly
     # z -- covs for fixed effects
@@ -55,7 +63,10 @@ traceHat <- function(x, method = "direct"){
     cluster <- rep(1:nclust, table(cluster))
   
     X <- z
-    Z <- bdiag(lapply(unique(cluster), function(x) w[cluster == x, ]))
+    Z <- bdiag(lapply(unique(cluster), function(x){
+         block <- w[cluster == x, ]
+         if(ncol(w) > 1) return(rBind(block)) else return(cBind(block))
+       }))
     D <- bdiag(rep(list(Sigma), nclust))
   
     W3 <- diag(as.vector(exp(fitted)))
@@ -71,20 +82,23 @@ traceHat <- function(x, method = "direct"){
     W2 <- (W3 %*% M) %*% solve(C) %*% t(W3 %*% M)
     W <- W1-W2
     
-    if(nrow(Sigma) == 1&Sigma[1, 1] == 0){ 
+    if(nrow(Sigma) == 1 & Sigma[1, 1] == 0){ 
       return(sum(diag(solve(crossprod(X, W) %*% X %*% crossprod(X, W) %*% X))))
     }else if(method == "direct"){
       U <- cBind(as.matrix(X), as.matrix(Z))
       A <- Matrix(bdiag(matrix(0, x$nfixed, x$nfixed), solve(D)))
-      return(sum(diag(crossprod(U, W) %*% U %*% 
-                solve(crossprod(U, W) %*% U + A))))
-    }else if(method == "HaLee"){
+      UW <- crossprod(U, W)
+      return(sum(diag(UW %*% U %*% 
+                solve(UW %*% U + A))))
+    }else if(method %in% c("HaLee", "approx")){
       U <- solve(D)
+      XW <- crossprod(X, W); ZW <- crossprod(Z, W)
+      J <- if(method == "HaLee") 0 else U %*% as.vector(t(bhat)) %*% t(as.vector(t(bhat))) %*% U
       return(sum(diag(solve(
-      rBind(cBind(crossprod(X, W) %*% X, crossprod(X, W) %*% Z), 
-        cBind(crossprod(Z, W) %*% X, crossprod(Z, W) %*% Z+U))) %*% 
-      rBind(cBind(crossprod(X, W) %*% X, crossprod(X, W) %*% Z), 
-        cBind(crossprod(Z, W) %*% X, crossprod(Z, W) %*% Z)))))
+      rBind(cBind(XW %*% X, XW %*% Z), 
+            cBind(ZW %*% X, ZW %*% Z + U))) %*% 
+      rBind(cBind(XW %*% X, XW %*% Z), 
+            cBind(ZW %*% X, ZW %*% Z + J)))))
     }
   }else if(method == "pseudoPois"){
     xx <- pseudoPoisPHMM(x)

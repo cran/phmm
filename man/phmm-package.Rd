@@ -41,10 +41,9 @@ Ronghui Xu, Michael Donohue
 Maintainer: Michael Donohue \email{mdonohue@ucsd.edu}
 }
 \references{ Vaida, F. and Xu, R. "Proportional hazards model with random effects", \emph{Statistics in Medicine,} 19:3309-3324, 2000.
-}
+
+Donohue, MC, Overholser, R, Xu, R, and Vaida, F (January 01, 2011). Conditional Akaike information under generalized linear and proportional hazards mixed models. \emph{Biometrika}, 98, 3, 685-700.}
 \keyword{ package }
-\seealso{ \code{\link[bayesSurv]{bayessurvreg1}}
-}
 \examples{
 n <- 50      # total sample size
 nclust <- 5  # number of clusters

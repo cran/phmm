@@ -21,7 +21,7 @@ University of California, San Diego}
 \addtolength{\textwidth}{1.5in}
 
 \begin{document}
-\SweaveOpts{engine=R, eps=FALSE, pdf=TRUE, strip.white=TRUE, echo=TRUE}
+\SweaveOpts{engine=R, eps=FALSE, pdf=TRUE, strip.white=true, echo=TRUE}
 \SweaveOpts{include=FALSE}
 \setkeys{Gin}{width=\textwidth}
 
