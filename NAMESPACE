@@ -2,6 +2,7 @@ useDynLib(phmm)
 
 importFrom(survival, Surv)
 importFrom(stats, AIC)
+import(lattice)
 import(Matrix)
 
 export(phmm, loglik.cond, linear.predictors, 
