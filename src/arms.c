@@ -3,9 +3,9 @@
 
 /* *********************************************************************** */
 
-#include           <stdio.h>
-#include           <math.h>
-#include           <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
@@ -95,8 +95,6 @@ double logshift(double y, double y0);
 double perfunc(FUNBAG *lpdf, ENVELOPE *env, double x);
 
 void display(FILE *f, ENVELOPE *env);
-
-double u_random();
 
 /* *********************************************************************** */
 
@@ -197,7 +195,7 @@ int arms (double *xinit, int ninit, double *xl, double *xr,
   /* set up initial envelope */
   err = initial(xinit,ninit,*xl,*xr,npoint,&lpdf,env,convex,
         neval,metrop);
-  if(err)return err;
+  if(err) return err;
 
   /* finish setting up metropolis struct (can only do this after */
   /* setting up env) */
@@ -209,7 +207,7 @@ int arms (double *xinit, int ninit, double *xl, double *xr,
     metrop->xprev = *xprev;
     metrop->yprev = perfunc(&lpdf,env,*xprev);
   }
-
+  
   /* now do adaptive rejection */
   do {
     /* sample a new point */
@@ -367,7 +365,9 @@ void sample(ENVELOPE *env, POINT *p)
   double prob;
 
   /* sample a uniform */
-  prob = u_random();
+  GetRNGstate();
+  prob = unif_rand();
+  PutRNGstate();
 
   /* get x-value correponding to a cumulative probability prob */
   invert(prob,env,p);
@@ -385,7 +385,7 @@ void invert(double prob, ENVELOPE *env, POINT *p)
 /* *p      : a working POINT to hold the sampled value */
 
 {
-  double u,xl,xr,yl,yr,eyl,eyr,prop,z;
+  double u,xl,xr,yl,yr,eyl,eyr,prop;
   POINT *q;
 
   /* find rightmost point in envelope */
@@ -407,7 +407,7 @@ void invert(double prob, ENVELOPE *env, POINT *p)
 
   /* get the required x-value */
   if (q->pl->x == q->x){
-    /* interval is of zero length */
+    /* interval is of length zero */
     p->x = q->x;
     p->y = q->y;
     p->ey = q->ey;
@@ -435,23 +435,22 @@ void invert(double prob, ENVELOPE *env, POINT *p)
       p->y = ((p->x - xl)/(xr - xl)) * (yr - yl) + yl;
       p->ey = expshift(p->y, env->ymax);
     }
+  
+    /* guard against imprecision yielding point outside interval */
+    if ((p->x < xl) || (p->x > xr)){
+      Rprintf("xl = %e\n", xl);
+      Rprintf("xr = %e\n", xr);
+      Rprintf("p->x = %e\n", p->x);
+      if ((p->x < xl)){
+        Rprintf("p->x < xl\n");
+      }
+      if ((p->x > xr)){
+        Rprintf("p->x > xr\n");
+        Rprintf("p->x - xr = %e\n", p->x - xr);
+      }
+      error("ARMS error code 1");
+    }
   }
-
-  /* guard against imprecision yielding point outside interval */
-  if ((p->x < xl) || (p->x > xr)){
-     Rprintf("xl = %e\n", xl);
-	 Rprintf("xr = %e\n", xr);
-	 Rprintf("p->x = %e\n", p->x);
-	 if ((p->x < xl)){
-	    Rprintf("p->x < xl\n");
-		}
-	 if ((p->x > xr)){
-	    Rprintf("p->x > xr\n");
-		Rprintf("p->x - xr = %e\n", p->x - xr);
-        }
-     error("ARMS error code 1");
-   }
-
   return;
 }
 
@@ -470,7 +469,9 @@ int test(ENVELOPE *env, POINT *p, FUNBAG *lpdf, METROPOLIS *metrop)
   POINT *ql,*qr;
   
   /* for rejection test */
-  u = u_random() * p->ey;
+  GetRNGstate();
+  u = unif_rand() * p->ey;
+  PutRNGstate();
   y = logshift(u,env->ymax);
 
   if(!(metrop->on) && (p->pl->pl != NULL) && (p->pr->pr != NULL)){
@@ -537,7 +538,9 @@ int test(ENVELOPE *env, POINT *p, FUNBAG *lpdf, METROPOLIS *metrop)
   } else {
     w = 0.0;
   }
-  u = u_random();
+  GetRNGstate();
+  u = unif_rand();
+  PutRNGstate();
   if(u > w){
     /* metropolis says dont move, so replace current point with previous */
     /* markov chain iterate */
@@ -880,9 +883,10 @@ void display(FILE *f, ENVELOPE *env)
   fprintf(f,"========================================================\n");
   fprintf(f,"envelope attributes:\n");
   fprintf(f,"points in use = %d, points available = %d\n",
-          env->cpoint,env->npoint);
-  fprintf(f,"function evaluations = %d\n",*(env->neval));
-  fprintf(f,"ymax = %f, p = %x\n",env->ymax,env->p);
+          env->cpoint, env->npoint);
+  fprintf(f,"function evaluations = %d\n", *(env->neval));
+/*  fprintf(f,"ymax = %f, p = %x\n", env->ymax, env->p); */
+  fprintf(f,"ymax = %f", env->ymax);
   fprintf(f,"convexity adjustment = %f\n",*(env->convex));
   fprintf(f,"--------------------------------------------------------\n");
 
@@ -892,22 +896,14 @@ void display(FILE *f, ENVELOPE *env)
 
   /* now print each POINT from left to right */
   for(q = env->p; q != NULL; q = q->pr){
-    fprintf(f,"point at %x, left at %x, right at %x\n",q,q->pl,q->pr);
+/*    fprintf(f,"point at %x, left at %x, right at %x\n",q,q->pl,q->pr); */
+/*    fprintf(f,"left at %x, right at %x\n",q->pl,q->pr);*/
     fprintf(f,"x = %f, y = %f, ey = %f, cum = %f, f = %d\n",
             q->x,q->y,q->ey,q->cum,q->f);
   }
   fprintf(f,"========================================================\n");
 
   return;
-}
-
-/* *********************************************************************** */
-
-double u_random()
-
-/* to return a standard uniform random number */
-{
-   return ((double)rand() + 0.5)/((double)RAND_MAX + 1.0);
 }
 
 /* *********************************************************************** */

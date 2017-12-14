@@ -10,10 +10,15 @@ static R_NativePrimitiveArgType phmm_t[]={REALSXP, REALSXP, REALSXP, INTSXP,
 	REALSXP, REALSXP, REALSXP, REALSXP, INTSXP,
 	REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP};
 
+static R_NativePrimitiveArgType sVar_t[]={INTSXP,INTSXP,INTSXP,INTSXP,INTSXP,REALSXP,
+ INTSXP, REALSXP, REALSXP, REALSXP, INTSXP, REALSXP, REALSXP, REALSXP, REALSXP, REALSXP,
+ REALSXP, REALSXP, REALSXP, INTSXP, INTSXP, REALSXP, REALSXP, REALSXP};
+
 #define CDEF(name)  {#name, (DL_FUNC) &name, sizeof(name ## _t)/sizeof(name ## _t[0]), name ##_t}
 
 static const R_CMethodDef CEntries[] ={
     CDEF(phmm),
+    CDEF(sVar),
     {NULL,NULL,0}
 };
 

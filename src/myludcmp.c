@@ -7,7 +7,7 @@ void myludcmp(double **a, int n, int *indx, double *d)
 {
 	int i,imax,j,k;
 	double big,dum,sum,temp;
-	float *vv;
+	double *vv;
 
 	vv=(double *)R_alloc(n,sizeof(double));
 	*d=1.0;
