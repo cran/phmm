@@ -31,7 +31,6 @@ fit.ph <- coxph(Surv(time, event) ~ Z1 + Z2,
    phmmd, method="breslow", x=TRUE, y=TRUE)
 
 summary(fit.ph)
-fit.ph$loglik[2]
 
 ## ------------------------------------------------------------------------
 ppd <- as.data.frame(as.matrix(pseudoPoisPHMM(fit.ph)))
@@ -49,12 +48,11 @@ for(h in 1:length(eventtimes)){
 }
 
 ## ------------------------------------------------------------------------
-sum(log(poisl))
-
-sum(log(poisl)) - fit.ph$loglik[2]
+(coxph.pois.loglik = sum(log(poisl)))
+coxph.pois.loglik - fit.ph$loglik[2]
 
 ## ------------------------------------------------------------------------
-length(fit.ph$coef) + sum(phmmd$event)
+(coxph.pois.df = length(fit.ph$coef) + sum(phmmd$event))
 
 ## ------------------------------------------------------------------------
 ppd$t <- as.factor(ppd$time)
@@ -62,13 +60,16 @@ fit.glm <- glm(m~-1+t+z1+z2+offset(log(N)),
   ppd, family=poisson)
 
 summary(fit.glm)
-fit.ph$coef
-logLik(fit.glm)
-logLik(fit.glm)[1] - sum(log(poisl))
+
+cbind(coxph.coef = fit.ph$coef, glm.coef = coef(fit.glm)[c('z1', 'z2')])
+cbind(coxph.pois.loglik, glm.loglik=logLik(fit.glm))
 
 ## ------------------------------------------------------------------------
 bh <- basehaz(fit.ph, centered = FALSE)
-log(bh$hazard - c(0,bh$hazard[1:(length(bh$hazard)-1)]))[1:10]
+cbind(
+  coxph.bh.step = log(bh$hazard - c(0,bh$hazard[1:(length(bh$hazard)-1)]))[1:5],
+  glm.bh.step = coef(fit.glm)[1:5]
+)
 
 ## ------------------------------------------------------------------------
 fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (Z1 + Z2|cluster), 
@@ -91,9 +92,8 @@ for(h in 1:length(eventtimes)){
 }
 
 ## ------------------------------------------------------------------------
-sum(log(poisl))
-
-sum(log(poisl)) - fit.phmm$loglik[1]
+phmm.pois.loglik = sum(log(poisl))
+phmm.pois.loglik - fit.phmm$loglik[1]
 
 ## ------------------------------------------------------------------------
 # Poisson GLMM degrees of freedom  length(unique(x$cluster)) * x$nrandom + x$nfixed
@@ -110,8 +110,11 @@ summary(fit.lmer)$coef
 fit.phmm$coef
 logLik(fit.lmer)
 
-sum(log(poisl)) - logLik(fit.lmer)[1]
+phmm.pois.loglik - logLik(fit.lmer)[1]
 
 ## ------------------------------------------------------------------------
-log(fit.phmm$lambda)[1:10]
+cbind(
+  phmm.bh.step = log(fit.phmm$lambda)[1:5],
+  glm.bh.step = fixef(fit.lmer)[1:5]
+)
 
