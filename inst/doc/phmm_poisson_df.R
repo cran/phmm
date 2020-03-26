@@ -1,5 +1,4 @@
-## ------------------------------------------------------------------------
-options(width=75)
+## ---- message=FALSE-----------------------------------------------------------
 library(phmm)
 
 n <- 50      # total sample size
@@ -26,13 +25,25 @@ phmmd$cluster <- clusters
 phmmd$time <- time
 phmmd$event <- event
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 fit.ph <- coxph(Surv(time, event) ~ Z1 + Z2, 
    phmmd, method="breslow", x=TRUE, y=TRUE)
 
 summary(fit.ph)
 
-## ------------------------------------------------------------------------
+## ---- eval=FALSE, echo=FALSE--------------------------------------------------
+#  # cox partial likelihood
+#  pl <- c()
+#  for(h in 1:length(eventtimes)){
+#    js <- phmmd$time == eventtimes[h] # j star
+#    j  <- phmmd$time >= eventtimes[h]
+#    if(sum(js) > 1) stop("tied event times")
+#    pl <- c(pl,
+#      exp(phmmd[js, "linear.predictors"])/
+#      sum(exp(phmmd[j, "linear.predictors"])))
+#  }
+
+## -----------------------------------------------------------------------------
 ppd <- as.data.frame(as.matrix(pseudoPoisPHMM(fit.ph)))
 
 # pois likelihood
@@ -47,14 +58,14 @@ for(h in 1:length(eventtimes)){
     sum(ppd[j, "N"]*exp(ppd[j, "linear.predictors"])))
 }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 (coxph.pois.loglik = sum(log(poisl)))
 coxph.pois.loglik - fit.ph$loglik[2]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 (coxph.pois.df = length(fit.ph$coef) + sum(phmmd$event))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ppd$t <- as.factor(ppd$time)
 fit.glm <- glm(m~-1+t+z1+z2+offset(log(N)), 
   ppd, family=poisson)
@@ -64,20 +75,21 @@ summary(fit.glm)
 cbind(coxph.coef = fit.ph$coef, glm.coef = coef(fit.glm)[c('z1', 'z2')])
 cbind(coxph.pois.loglik, glm.loglik=logLik(fit.glm))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 bh <- basehaz(fit.ph, centered = FALSE)
 cbind(
   coxph.bh.step = log(bh$hazard - c(0,bh$hazard[1:(length(bh$hazard)-1)]))[1:5],
   glm.bh.step = coef(fit.glm)[1:5]
 )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+set.seed(20200316)
 fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (Z1 + Z2|cluster), 
    phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 ppd <- as.data.frame(as.matrix(pseudoPoisPHMM(fit.phmm)))
 
 poisl <- c()
@@ -91,15 +103,15 @@ for(h in 1:length(eventtimes)){
     sum(ppd[j, "N"]*exp(ppd[j, "linear.predictors"])))
 }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 phmm.pois.loglik = sum(log(poisl))
 phmm.pois.loglik - fit.phmm$loglik[1]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Poisson GLMM degrees of freedom  length(unique(x$cluster)) * x$nrandom + x$nfixed
 traceHat(fit.phmm, "pseudoPois") # + 2*sum(phmmd$event)
 
-## ----message = FALSE, warning = FALSE------------------------------------
+## ---- message = FALSE, warning = FALSE----------------------------------------
 library(lme4)
 ppd$t <- as.factor(ppd$time)
 fit.lmer <- glmer(m~-1+t+z1+z2+
@@ -112,7 +124,7 @@ logLik(fit.lmer)
 
 phmm.pois.loglik - logLik(fit.lmer)[1]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 cbind(
   phmm.bh.step = log(fit.phmm$lambda)[1:5],
   glm.bh.step = fixef(fit.lmer)[1:5]

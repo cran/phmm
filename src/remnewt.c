@@ -1,6 +1,6 @@
-#include <math.h>
+#include <R.h>
+#include <Rinternals.h>
 #define NRANSI
-#include "R.h"
 #include "phmm.h"
 
 void mnewt(int n, int ntrial, float *x, float tolx, float tolf,
@@ -12,9 +12,9 @@ void mnewt(int n, int ntrial, float *x, float tolx, float tolf,
     int k,i,*indx;
     float errx,errf,d,*fvec,**fjac,*p;
 
-    indx=(int *)R_alloc(n, sizeof(int));
-    p=(float *)R_alloc(n, sizeof(float));
-    fvec=(float *)R_alloc(n, sizeof(float));
+    indx=(int *)R_alloc(n+1, sizeof(int));
+    p=(float *)R_alloc(n+1, sizeof(float));
+    fvec=(float *)R_alloc(n+1, sizeof(float));
     fjac=matrix(1,n,1,n);
     errx=tolx+1;
     for (k=1;k<=ntrial;k++) {            /*Rprintf("trial no.1");*/

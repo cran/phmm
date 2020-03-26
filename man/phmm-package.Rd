@@ -25,7 +25,7 @@ pseudoPoisPHMM Pseudo poisson data for fitting PHMM via GLMM traceHat Trace
 of the "hat" matrix from PHMM-MCEM fit }
 }
 \examples{
-
+\donttest{
 n <- 50      # total sample size
 nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
@@ -53,7 +53,7 @@ fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster),
    phmmd, Gbs = 100, Gbsvar = 1000, VARSTART = 1,
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
-
+}
 }
 \references{
 Vaida, F. and Xu, R. "Proportional hazards model with random

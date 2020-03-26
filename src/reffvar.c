@@ -2,7 +2,6 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Rdynload.h>
 #include "phmm.h" 
 
 void sVar(int *sGbs, int *snobs, int *snreff, int *sncov, int *sNINIT, float *sbetahat,
@@ -22,7 +21,6 @@ void sVar(int *sGbs, int *snobs, int *snreff, int *sncov, int *sNINIT, float *sb
   int ncov = *sncov;
   int nclust = *snclust;
 
-  double *b;
   double *Lambexp;
   double *lambda;
   int *delta;
@@ -43,7 +41,6 @@ void sVar(int *sGbs, int *snobs, int *snreff, int *sncov, int *sNINIT, float *sb
   float betahat[ncov+1];
   double **var;
   
-  b = (double *)R_alloc((nreff+1), sizeof(double));
   Lambexp = (double *)R_alloc((nobs+1), sizeof(double));
   lambda = (double *)R_alloc((nobs+1), sizeof(double));
   delta = (int *)R_alloc((nobs+1), sizeof(double));
@@ -166,7 +163,7 @@ void Var(int Gbs, int nobs, int nreff, int ncov, int NINIT, float *betahat,
   double **zz, int *delta, int *ddelta, double *omega, double **z,
   double **var) 
 {
-  int g, i, d, j, l, nfail, dd, fail[nobs+1], in;
+  int g, i, d, j, l, nfail=0, dd, fail[nobs+1], in;
   double ooomega[nobs+1], ebetaz[nobs+1], sum[nreff+1];
   double sbeta[ncov+1], ssigma2[nreff+1], slambda[nobs+1], ssum0, ssum1;
   double *Iobs[ncov+nreff+nobs+1];
@@ -177,8 +174,7 @@ void Var(int Gbs, int nobs, int nreff, int ncov, int NINIT, float *betahat,
   struct dens_para para;
   double myxinit[nreff+1][NINIT];
   double msbeta[ncov+1], mssigma2[nreff+1], mslambda[nobs+1];
-  double varLamb[nobs+1];
-  
+
   for (i=1;i<=ncov+nreff+nobs;i++) { 
     Iobs[i]= (double *)R_alloc((ncov+nreff+nobs+1),sizeof(double));
   }
@@ -186,8 +182,6 @@ void Var(int Gbs, int nobs, int nreff, int ncov, int NINIT, float *betahat,
   for (j=1; j<=nobs; j++){
     ebetaz[j] = exp(BetaZ(j, betahat, ncov, z)); 
   }   
-
-  varLamb[0] = 0;
 
   /* Initializations: */
   for (l=1; l<=nobs; l++){

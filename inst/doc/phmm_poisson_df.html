@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Poisson GLM, Cox PH, &amp; degrees of freedom</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Poisson GLM, Cox PH, &amp; degrees of freedom</h1>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We discuss connections between the Cox proportional hazards model and Poisson generalized linear models as described in Whitehead (1980). We fit comparable models to a sample dataset using <code>coxph()</code>, <code>glm()</code>, <code>phmm()</code>, and <code>glmer()</code> and explore similarities.</p>
+</div>
+<div id="a-simple-cox-ph-example" class="section level1">
+<h1>A simple Cox PH example</h1>
+<div id="generate-data" class="section level2">
+<h2>Generate data</h2>
+<p>We generate proportional hazards mixed model data.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(phmm)</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3">n &lt;-<span class="st"> </span><span class="dv">50</span>      <span class="co"># total sample size</span></a>
+<a class="sourceLine" id="cb1-4" title="4">nclust &lt;-<span class="st"> </span><span class="dv">5</span>  <span class="co"># number of clusters</span></a>
+<a class="sourceLine" id="cb1-5" title="5">clusters &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span>nclust,<span class="dt">each=</span>n<span class="op">/</span>nclust)</a>
+<a class="sourceLine" id="cb1-6" title="6">beta0 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="kw">set.seed</span>(<span class="dv">13</span>)</a>
+<a class="sourceLine" id="cb1-8" title="8"></a>
+<a class="sourceLine" id="cb1-9" title="9">Z &lt;-<span class="kw">cbind</span>(<span class="dt">Z1=</span><span class="kw">sample</span>(<span class="dv">0</span><span class="op">:</span><span class="dv">1</span>,n,<span class="dt">replace=</span><span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb1-10" title="10">          <span class="dt">Z2=</span><span class="kw">sample</span>(<span class="dv">0</span><span class="op">:</span><span class="dv">1</span>,n,<span class="dt">replace=</span><span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb1-11" title="11">          <span class="dt">Z3=</span><span class="kw">sample</span>(<span class="dv">0</span><span class="op">:</span><span class="dv">1</span>,n,<span class="dt">replace=</span><span class="ot">TRUE</span>))</a>
+<a class="sourceLine" id="cb1-12" title="12">b &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">rep</span>(<span class="kw">rnorm</span>(nclust), <span class="dt">each=</span>n<span class="op">/</span>nclust),</a>
+<a class="sourceLine" id="cb1-13" title="13">           <span class="kw">rep</span>(<span class="kw">rnorm</span>(nclust), <span class="dt">each=</span>n<span class="op">/</span>nclust))</a>
+<a class="sourceLine" id="cb1-14" title="14">Wb &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>,n,<span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="cf">for</span>( j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>) Wb[,j] &lt;-<span class="st"> </span>Z[,j]<span class="op">*</span>b[,j]</a>
+<a class="sourceLine" id="cb1-16" title="16">Wb &lt;-<span class="st"> </span><span class="kw">apply</span>(Wb,<span class="dv">1</span>,sum)</a>
+<a class="sourceLine" id="cb1-17" title="17">T &lt;-<span class="st"> </span><span class="op">-</span><span class="kw">log</span>(<span class="kw">runif</span>(n,<span class="dv">0</span>,<span class="dv">1</span>))<span class="op">*</span><span class="kw">exp</span>(<span class="op">-</span>Z[,<span class="kw">c</span>(<span class="st">&#39;Z1&#39;</span>,<span class="st">&#39;Z2&#39;</span>)]<span class="op">%*%</span>beta0<span class="op">-</span>Wb)</a>
+<a class="sourceLine" id="cb1-18" title="18">C &lt;-<span class="st"> </span><span class="kw">runif</span>(n,<span class="dv">0</span>,<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb1-19" title="19">time &lt;-<span class="st"> </span><span class="kw">ifelse</span>(T<span class="op">&lt;</span>C,T,C)</a>
+<a class="sourceLine" id="cb1-20" title="20">event &lt;-<span class="st"> </span><span class="kw">ifelse</span>(T <span class="op">&lt;=</span><span class="st"> </span>C,<span class="dv">1</span>,<span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb1-21" title="21"><span class="kw">sum</span>(event)</a></code></pre></div>
+<pre><code>## [1] 30</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">phmmd &lt;-<span class="st"> </span><span class="kw">data.frame</span>(Z)</a>
+<a class="sourceLine" id="cb3-2" title="2">phmmd<span class="op">$</span>cluster &lt;-<span class="st"> </span>clusters</a>
+<a class="sourceLine" id="cb3-3" title="3">phmmd<span class="op">$</span>time &lt;-<span class="st"> </span>time</a>
+<a class="sourceLine" id="cb3-4" title="4">phmmd<span class="op">$</span>event &lt;-<span class="st"> </span>event</a></code></pre></div>
+</div>
+<div id="fit-the-cox-ph-model" class="section level2">
+<h2>Fit the Cox PH model</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">fit.ph &lt;-<span class="st"> </span><span class="kw">coxph</span>(<span class="kw">Surv</span>(time, event) <span class="op">~</span><span class="st"> </span>Z1 <span class="op">+</span><span class="st"> </span>Z2, </a>
+<a class="sourceLine" id="cb4-2" title="2">   phmmd, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>, <span class="dt">x=</span><span class="ot">TRUE</span>, <span class="dt">y=</span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb4-3" title="3"></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="kw">summary</span>(fit.ph)</a></code></pre></div>
+<pre><code>## Call:
+## coxph(formula = Surv(time, event) ~ Z1 + Z2, data = phmmd, x = TRUE, 
+##     y = TRUE, method = &quot;breslow&quot;)
+## 
+##   n= 50, number of events= 30 
+## 
+##      coef exp(coef) se(coef)     z Pr(&gt;|z|)    
+## Z1 1.5061    4.5091   0.4313 3.492  0.00048 ***
+## Z2 0.4376    1.5490   0.3708 1.180  0.23798    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##    exp(coef) exp(-coef) lower .95 upper .95
+## Z1     4.509     0.2218    1.9361    10.501
+## Z2     1.549     0.6456    0.7488     3.204
+## 
+## Concordance= 0.696  (se = 0.053 )
+## Likelihood ratio test= 16.81  on 2 df,   p=2e-04
+## Wald test            = 14.93  on 2 df,   p=6e-04
+## Score (logrank) test = 17.2  on 2 df,   p=2e-04</code></pre>
+<p>Next we create data to fit an auxilary Poisson model as described in Whitehead (1980) using the <code>pseudoPoisPHMM()</code> function provided in the <code>phmm</code> package. This function also extracts the linear predictors as estimated from the Cox PH model so that we can calculate likelihoods and degrees of freedom.</p>
+</div>
+<div id="likelihood-and-degrees-of-freedom-for-poisson-glm-from-cox-ph-parameters" class="section level2">
+<h2>Likelihood and degrees of freedom for Poisson GLM from Cox PH parameters</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">ppd &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(<span class="kw">pseudoPoisPHMM</span>(fit.ph)))</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="co"># pois likelihood</span></a>
+<a class="sourceLine" id="cb6-4" title="4">poisl &lt;-<span class="st"> </span><span class="kw">c</span>()</a>
+<a class="sourceLine" id="cb6-5" title="5">eventtimes &lt;-<span class="st"> </span><span class="kw">sort</span>(phmmd<span class="op">$</span>time[phmmd<span class="op">$</span>event <span class="op">==</span><span class="st"> </span><span class="dv">1</span>])</a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="cf">for</span>(h <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(eventtimes)){</a>
+<a class="sourceLine" id="cb6-7" title="7">  js &lt;-<span class="st"> </span>ppd<span class="op">$</span>time <span class="op">==</span><span class="st"> </span>eventtimes[h] <span class="op">&amp;</span><span class="st"> </span>ppd<span class="op">$</span>m <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1</span>  <span class="co"># j star</span></a>
+<a class="sourceLine" id="cb6-8" title="8">  j  &lt;-<span class="st"> </span>ppd<span class="op">$</span>time <span class="op">==</span><span class="st"> </span>eventtimes[h]</a>
+<a class="sourceLine" id="cb6-9" title="9">  <span class="cf">if</span>(<span class="kw">sum</span>(js) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) <span class="kw">stop</span>(<span class="st">&quot;tied event times&quot;</span>)</a>
+<a class="sourceLine" id="cb6-10" title="10">  poisl &lt;-<span class="st"> </span><span class="kw">c</span>(poisl, </a>
+<a class="sourceLine" id="cb6-11" title="11">    ppd[js, <span class="st">&quot;N&quot;</span>]<span class="op">*</span><span class="kw">exp</span>(<span class="op">-</span><span class="dv">1</span>)<span class="op">*</span><span class="kw">exp</span>(ppd[js, <span class="st">&quot;linear.predictors&quot;</span>])<span class="op">/</span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="st">    </span><span class="kw">sum</span>(ppd[j, <span class="st">&quot;N&quot;</span>]<span class="op">*</span><span class="kw">exp</span>(ppd[j, <span class="st">&quot;linear.predictors&quot;</span>])))</a>
+<a class="sourceLine" id="cb6-13" title="13">}</a></code></pre></div>
+<p>Poisson likelihood:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">(<span class="dt">coxph.pois.loglik =</span> <span class="kw">sum</span>(<span class="kw">log</span>(poisl)))</a></code></pre></div>
+<pre><code>## [1] -65.95449</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">coxph.pois.loglik <span class="op">-</span><span class="st"> </span>fit.ph<span class="op">$</span>loglik[<span class="dv">2</span>]</a></code></pre></div>
+<pre><code>## [1] 25.25443</code></pre>
+<p>Poisson degrees of freedom</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">(<span class="dt">coxph.pois.df =</span> <span class="kw">length</span>(fit.ph<span class="op">$</span>coef) <span class="op">+</span><span class="st"> </span><span class="kw">sum</span>(phmmd<span class="op">$</span>event))</a></code></pre></div>
+<pre><code>## [1] 32</code></pre>
+</div>
+<div id="fit-auxiliary-poisson-glm" class="section level2">
+<h2>Fit auxiliary Poisson GLM</h2>
+<p>We fit an auxiliary Poisson GLM and note that the parameter estimates for z1 and z2 are identical to the coxph() fit, and the likelihood and degrees of freedom are as expected.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">ppd<span class="op">$</span>t &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ppd<span class="op">$</span>time)</a>
+<a class="sourceLine" id="cb13-2" title="2">fit.glm &lt;-<span class="st"> </span><span class="kw">glm</span>(m<span class="op">~-</span><span class="dv">1</span><span class="op">+</span>t<span class="op">+</span>z1<span class="op">+</span>z2<span class="op">+</span><span class="kw">offset</span>(<span class="kw">log</span>(N)), </a>
+<a class="sourceLine" id="cb13-3" title="3">  ppd, <span class="dt">family=</span>poisson)</a>
+<a class="sourceLine" id="cb13-4" title="4"></a>
+<a class="sourceLine" id="cb13-5" title="5"><span class="kw">summary</span>(fit.glm)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = m ~ -1 + t + z1 + z2 + offset(log(N)), family = poisson, 
+##     data = ppd)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0148  -0.8050  -0.4622   0.3374   1.7482  
+## 
+## Coefficients:
+##                       Estimate Std. Error z value Pr(&gt;|z|)    
+## t0.000446182539531382  -5.1899     1.0759  -4.824 1.41e-06 ***
+## t0.00163087691684562   -5.1813     1.0767  -4.812 1.49e-06 ***
+## t0.00275830723468582   -5.1725     1.0774  -4.801 1.58e-06 ***
+## t0.00280059794673464   -5.1466     1.0778  -4.775 1.80e-06 ***
+## t0.00318134995082413   -5.1051     1.0759  -4.745 2.09e-06 ***
+## t0.00320419136302427   -5.0618     1.0739  -4.713 2.44e-06 ***
+## t0.00395636869870054   -5.0166     1.0718  -4.681 2.86e-06 ***
+## t0.00511123775406486   -5.0063     1.0727  -4.667 3.05e-06 ***
+## t0.00559427171447325   -4.9756     1.0729  -4.637 3.53e-06 ***
+## t0.00766727170160828   -4.9262     1.0705  -4.602 4.19e-06 ***
+## t0.00808285780728387   -4.9189     1.0715  -4.591 4.42e-06 ***
+## t0.019339488197591     -4.8312     1.0691  -4.519 6.22e-06 ***
+## t0.0299199501201303    -4.7739     1.0662  -4.477 7.56e-06 ***
+## t0.0531838782317072    -4.7040     1.0642  -4.420 9.86e-06 ***
+## t0.066999301944422     -4.6476     1.0652  -4.363 1.28e-05 ***
+## t0.0855879977109686    -4.6034     1.0652  -4.322 1.55e-05 ***
+## t0.128630049328015     -4.5408     1.0664  -4.258 2.06e-05 ***
+## t0.131437682173085     -4.4634     1.0623  -4.202 2.65e-05 ***
+## t0.15257919709977      -4.3669     1.0591  -4.123 3.74e-05 ***
+## t0.157383776779992     -4.2092     1.0531  -3.997 6.41e-05 ***
+## t0.163824053514786     -4.1398     1.0522  -3.934 8.34e-05 ***
+## t0.168953982363505     -4.0653     1.0515  -3.866 0.000111 ***
+## t0.227852125295401     -3.8120     1.0431  -3.654 0.000258 ***
+## t0.280623578426198     -3.7668     1.0471  -3.597 0.000322 ***
+## t0.314323389014675     -3.6567     1.0463  -3.495 0.000474 ***
+## t0.351296650884504     -3.5733     1.0492  -3.406 0.000660 ***
+## t0.485749622685594     -3.0723     1.0355  -2.967 0.003007 ** 
+## t0.509510538708177     -2.9979     1.0372  -2.890 0.003849 ** 
+## t0.529434934651452     -2.7430     1.0338  -2.653 0.007969 ** 
+## t0.540077948287249     -2.6765     1.0385  -2.577 0.009960 ** 
+## z1                      1.5061     0.4313   3.492 0.000480 ***
+## z2                      0.4376     0.3708   1.180 0.237981    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 1701.491  on 118  degrees of freedom
+## Residual deviance:   71.909  on  86  degrees of freedom
+## AIC: 195.91
+## 
+## Number of Fisher Scoring iterations: 7</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="kw">cbind</span>(<span class="dt">coxph.coef =</span> fit.ph<span class="op">$</span>coef, <span class="dt">glm.coef =</span> <span class="kw">coef</span>(fit.glm)[<span class="kw">c</span>(<span class="st">&#39;z1&#39;</span>, <span class="st">&#39;z2&#39;</span>)])</a></code></pre></div>
+<pre><code>##    coxph.coef  glm.coef
+## Z1  1.5060975 1.5060975
+## Z2  0.4376126 0.4376126</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">cbind</span>(coxph.pois.loglik, <span class="dt">glm.loglik=</span><span class="kw">logLik</span>(fit.glm))</a></code></pre></div>
+<pre><code>##      coxph.pois.loglik glm.loglik
+## [1,]         -65.95449  -65.95449</code></pre>
+<p>The additional parameter estimates correspond to the estimated log baseline hazard, which we verify using the <code>basehaz()</code> function.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">bh &lt;-<span class="st"> </span><span class="kw">basehaz</span>(fit.ph, <span class="dt">centered =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">cbind</span>(</a>
+<a class="sourceLine" id="cb19-3" title="3">  <span class="dt">coxph.bh.step =</span> <span class="kw">log</span>(bh<span class="op">$</span>hazard <span class="op">-</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,bh<span class="op">$</span>hazard[<span class="dv">1</span><span class="op">:</span>(<span class="kw">length</span>(bh<span class="op">$</span>hazard)<span class="op">-</span><span class="dv">1</span>)]))[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>],</a>
+<a class="sourceLine" id="cb19-4" title="4">  <span class="dt">glm.bh.step =</span> <span class="kw">coef</span>(fit.glm)[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</a>
+<a class="sourceLine" id="cb19-5" title="5">)</a></code></pre></div>
+<pre><code>##                       coxph.bh.step glm.bh.step
+## t0.000446182539531382     -5.189938   -5.189938
+## t0.00163087691684562      -5.181269   -5.181269
+## t0.00275830723468582      -5.172524   -5.172524
+## t0.00280059794673464      -5.146624   -5.146624
+## t0.00318134995082413      -5.105131   -5.105131</code></pre>
+</div>
+</div>
+<div id="extending-to-phmm" class="section level1">
+<h1>Extending to PHMM</h1>
+<div id="fit-phmm" class="section level2">
+<h2>Fit PHMM</h2>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">set.seed</span>(<span class="dv">20200316</span>)</a>
+<a class="sourceLine" id="cb21-2" title="2">fit.phmm &lt;-<span class="st"> </span><span class="kw">phmm</span>(<span class="kw">Surv</span>(time, event) <span class="op">~</span><span class="st"> </span>Z1 <span class="op">+</span><span class="st"> </span>Z2 <span class="op">+</span><span class="st"> </span>(Z1 <span class="op">+</span><span class="st"> </span>Z2<span class="op">|</span>cluster), </a>
+<a class="sourceLine" id="cb21-3" title="3">   phmmd, <span class="dt">Gbs =</span> <span class="dv">100</span>, <span class="dt">Gbsvar =</span> <span class="dv">1000</span>, <span class="dt">VARSTART =</span> <span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb21-4" title="4">   <span class="dt">NINIT =</span> <span class="dv">10</span>, <span class="dt">MAXSTEP =</span> <span class="dv">100</span>, <span class="dt">CONVERG=</span><span class="dv">90</span>)</a>
+<a class="sourceLine" id="cb21-5" title="5"><span class="kw">summary</span>(fit.phmm)</a></code></pre></div>
+<pre><code>## 
+## Proportional Hazards Mixed-Effects Model fit by MCMC-EM
+##   Model: Surv(time, event) ~ Z1 + Z2 + (Z1 + Z2 | cluster) 
+##   Data: phmmd 
+##   Log-likelihood:
+## Conditional     Laplace         RIS 
+##      -83.08     -118.76     -118.70 
+## 
+## Fixed effects: Surv(time, event) ~ Z1 + Z2 
+##    Estimate Std.Error
+## Z1   1.6170    0.4564
+## Z2   0.5818    0.5866
+## 
+## Random effects: (Z1 + Z2 | cluster) 
+## Estimated variance-covariance matrix:
+##             (Intercept)       Z1    Z2
+## (Intercept)     0.01026 0.000000 0.000
+## Z1              0.00000 0.006868 0.000
+## Z2              0.00000 0.000000 1.056
+## 
+## Number of Observations: 50
+## Number of Groups:  5</code></pre>
+</div>
+<div id="likelihood-and-degrees-of-freedom-for-poisson-glmm-from-phmm-parameters" class="section level2">
+<h2>Likelihood and degrees of freedom for Poisson GLMM from PHMM parameters</h2>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">ppd &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">as.matrix</span>(<span class="kw">pseudoPoisPHMM</span>(fit.phmm)))</a>
+<a class="sourceLine" id="cb23-2" title="2"></a>
+<a class="sourceLine" id="cb23-3" title="3">poisl &lt;-<span class="st"> </span><span class="kw">c</span>()</a>
+<a class="sourceLine" id="cb23-4" title="4">eventtimes &lt;-<span class="st"> </span><span class="kw">sort</span>(phmmd<span class="op">$</span>time[phmmd<span class="op">$</span>event <span class="op">==</span><span class="st"> </span><span class="dv">1</span>])</a>
+<a class="sourceLine" id="cb23-5" title="5"><span class="cf">for</span>(h <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(eventtimes)){</a>
+<a class="sourceLine" id="cb23-6" title="6">  js &lt;-<span class="st"> </span>ppd<span class="op">$</span>time <span class="op">==</span><span class="st"> </span>eventtimes[h] <span class="op">&amp;</span><span class="st"> </span>ppd<span class="op">$</span>m <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1</span>  <span class="co"># j star</span></a>
+<a class="sourceLine" id="cb23-7" title="7">  j  &lt;-<span class="st"> </span>ppd<span class="op">$</span>time <span class="op">==</span><span class="st"> </span>eventtimes[h]</a>
+<a class="sourceLine" id="cb23-8" title="8">  <span class="cf">if</span>(<span class="kw">sum</span>(js) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) <span class="kw">stop</span>(<span class="st">&quot;tied event times&quot;</span>)</a>
+<a class="sourceLine" id="cb23-9" title="9">  poisl &lt;-<span class="st"> </span><span class="kw">c</span>(poisl, </a>
+<a class="sourceLine" id="cb23-10" title="10">    ppd[js, <span class="st">&quot;N&quot;</span>]<span class="op">*</span><span class="kw">exp</span>(<span class="op">-</span><span class="dv">1</span>)<span class="op">*</span><span class="kw">exp</span>(ppd[js, <span class="st">&quot;linear.predictors&quot;</span>])<span class="op">/</span></a>
+<a class="sourceLine" id="cb23-11" title="11"><span class="st">    </span><span class="kw">sum</span>(ppd[j, <span class="st">&quot;N&quot;</span>]<span class="op">*</span><span class="kw">exp</span>(ppd[j, <span class="st">&quot;linear.predictors&quot;</span>])))</a>
+<a class="sourceLine" id="cb23-12" title="12">}</a></code></pre></div>
+<p>Poisson likelihood:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">phmm.pois.loglik =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">log</span>(poisl))</a>
+<a class="sourceLine" id="cb24-2" title="2">phmm.pois.loglik <span class="op">-</span><span class="st"> </span>fit.phmm<span class="op">$</span>loglik[<span class="dv">1</span>]</a></code></pre></div>
+<pre><code>## Conditional 
+##   -13.58648</code></pre>
+<p>Poisson degrees of freedom</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="co"># Poisson GLMM degrees of freedom  length(unique(x$cluster)) * x$nrandom + x$nfixed</span></a>
+<a class="sourceLine" id="cb26-2" title="2"><span class="kw">traceHat</span>(fit.phmm, <span class="st">&quot;pseudoPois&quot;</span>) <span class="co"># + 2*sum(phmmd$event)</span></a></code></pre></div>
+<pre><code>## [1] 5.018931</code></pre>
+</div>
+<div id="fit-auxiliary-poisson-glmm" class="section level2">
+<h2>Fit auxiliary Poisson GLMM</h2>
+<p>We fit an auxiliary Poisson GLMM, although with a general variance-covariance matrix for the random effects (phmm() only fits models with diagonal variance-covariance matrix).</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">library</span>(lme4)</a>
+<a class="sourceLine" id="cb28-2" title="2">ppd<span class="op">$</span>t &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ppd<span class="op">$</span>time)</a>
+<a class="sourceLine" id="cb28-3" title="3">fit.lmer &lt;-<span class="st"> </span><span class="kw">glmer</span>(m<span class="op">~-</span><span class="dv">1</span><span class="op">+</span>t<span class="op">+</span>z1<span class="op">+</span>z2<span class="op">+</span></a>
+<a class="sourceLine" id="cb28-4" title="4"><span class="st">  </span>(z1<span class="op">+</span>z2<span class="op">|</span>cluster)<span class="op">+</span><span class="kw">offset</span>(<span class="kw">log</span>(N)), </a>
+<a class="sourceLine" id="cb28-5" title="5">  <span class="dt">data=</span>ppd, <span class="dt">family=</span>poisson, <span class="dt">nAGQ=</span><span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb28-6" title="6"></a>
+<a class="sourceLine" id="cb28-7" title="7"><span class="kw">summary</span>(fit.lmer)<span class="op">$</span>coef</a></code></pre></div>
+<pre><code>##                         Estimate Std. Error   z value     Pr(&gt;|z|)
+## t0.000446182539531382 -5.7813397  1.1440995 -5.053179 4.345156e-07
+## t0.00163087691684562  -5.7685008  1.1453474 -5.036464 4.742104e-07
+## t0.00275830723468582  -5.7531424  1.1471637 -5.015101 5.300550e-07
+## t0.00280059794673464  -5.7378389  1.1486000 -4.995507 5.868147e-07
+## t0.00318134995082413  -5.6452747  1.1414477 -4.945715 7.586501e-07
+## t0.00320419136302427  -5.5432601  1.1349421 -4.884179 1.038609e-06
+## t0.00395636869870054  -5.3975473  1.1228024 -4.807210 1.530511e-06
+## t0.00511123775406486  -5.3752136  1.1248473 -4.778616 1.765056e-06
+## t0.00559427171447325  -5.3521882  1.1261561 -4.752616 2.008011e-06
+## t0.00766727170160828  -5.1728904  1.1132452 -4.646677 3.373250e-06
+## t0.00808285780728387  -5.1646583  1.1148223 -4.632719 3.608942e-06
+## t0.019339488197591    -4.9601814  1.1019248 -4.501379 6.751395e-06
+## t0.0299199501201303   -4.6818910  1.0850479 -4.314916 1.596633e-05
+## t0.0531838782317072   -4.6126510  1.0816498 -4.264459 2.003875e-05
+## t0.066999301944422    -4.5481475  1.0821894 -4.202728 2.637175e-05
+## t0.0855879977109686   -4.4951855  1.0818533 -4.155079 3.251755e-05
+## t0.128630049328015    -4.4249733  1.0829876 -4.085895 4.390729e-05
+## t0.131437682173085    -4.3506932  1.0767235 -4.040678 5.329686e-05
+## t0.15257919709977     -4.2702442  1.0774013 -3.963467 7.386916e-05
+## t0.157383776779992    -4.1073777  1.0689456 -3.842457 1.218087e-04
+## t0.163824053514786    -4.0253605  1.0673062 -3.771514 1.622599e-04
+## t0.168953982363505    -3.9362644  1.0656891 -3.693633 2.210728e-04
+## t0.227852125295401    -3.6778267  1.0541765 -3.488815 4.851671e-04
+## t0.280623578426198    -3.6268487  1.0584957 -3.426418 6.115984e-04
+## t0.314323389014675    -3.4875614  1.0563771 -3.301436 9.619133e-04
+## t0.351296650884504    -3.3234060  1.0598050 -3.135866 1.713477e-03
+## t0.485749622685594    -2.9208484  1.0476710 -2.787944 5.304365e-03
+## t0.509510538708177    -2.8564227  1.0482173 -2.725029 6.429581e-03
+## t0.529434934651452    -2.5278619  1.0453509 -2.418195 1.559773e-02
+## t0.540077948287249    -2.4051694  1.0540487 -2.281839 2.249885e-02
+## z1                     1.5783789  0.4787804  3.296666 9.783994e-04
+## z2                     0.6575325  0.6543760  1.004824 3.149818e-01</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">fit.phmm<span class="op">$</span>coef</a></code></pre></div>
+<pre><code>##        Z1        Z2 
+## 1.6169634 0.5818235</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="kw">logLik</span>(fit.lmer)</a></code></pre></div>
+<pre><code>## &#39;log Lik.&#39; -102.0292 (df=38)</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">phmm.pois.loglik <span class="op">-</span><span class="st"> </span><span class="kw">logLik</span>(fit.lmer)[<span class="dv">1</span>]</a></code></pre></div>
+<pre><code>## [1] 5.364446</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1"><span class="kw">cbind</span>(</a>
+<a class="sourceLine" id="cb36-2" title="2">  <span class="dt">phmm.bh.step =</span> <span class="kw">log</span>(fit.phmm<span class="op">$</span>lambda)[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>],</a>
+<a class="sourceLine" id="cb36-3" title="3">  <span class="dt">glm.bh.step =</span> <span class="kw">fixef</span>(fit.lmer)[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</a>
+<a class="sourceLine" id="cb36-4" title="4">)</a></code></pre></div>
+<pre><code>##                       phmm.bh.step glm.bh.step
+## t0.000446182539531382    -5.786086   -5.781340
+## t0.00163087691684562     -5.770504   -5.768501
+## t0.00275830723468582     -5.749254   -5.753142
+## t0.00280059794673464     -5.732263   -5.737839
+## t0.00318134995082413     -5.644879   -5.645275</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

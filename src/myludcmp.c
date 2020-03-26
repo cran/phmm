@@ -1,15 +1,15 @@
-#include <math.h>
-#define NRANSI
 #include <R.h>
-#define TINY 1.0e-20;
+#include <Rinternals.h>
+#define NRANSI
+#define TINY 1.0e-20
 
 void myludcmp(double **a, int n, int *indx, double *d)
 {
-	int i,imax,j,k;
+	int i,imax=0,j,k;
 	double big,dum,sum,temp;
 	double *vv;
 
-	vv=(double *)R_alloc(n,sizeof(double));
+	vv=(double *)R_alloc(n+1,sizeof(double *));
 	*d=1.0;
 	for (i=1;i<=n;i++) {
 		big=0.0;

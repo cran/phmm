@@ -4,14 +4,27 @@
 \alias{phmm}
 \title{Proportional Hazards Model with Mixed Effects}
 \usage{
-phmm(formula, data, subset, na.action = na.fail, Sigma = "identity",
-  varcov = "diagonal", NINIT = 10, VARSTART = 1, MAXSTEP = 100,
-  CONVERG = 90, Gbs = 100, Gbsvar = 1000, verbose = FALSE,
-  maxtime = 120, random)
+phmm(
+  formula,
+  data,
+  subset,
+  na.action = na.fail,
+  Sigma = "identity",
+  varcov = "diagonal",
+  NINIT = 10,
+  VARSTART = 1,
+  MAXSTEP = 100,
+  CONVERG = 90,
+  Gbs = 100,
+  Gbsvar = 1000,
+  verbose = FALSE,
+  maxtime = 120,
+  random
+)
 }
 \arguments{
 \item{formula}{model formula for the fixed and random components of the
-model (as in \code{\link[lme4]{lmer}}).  An intercept is implicitly included
+model (as in \code{\link[lme4]{glmer}}).  An intercept is implicitly included
 in the model by estimation of the error distribution. As a consequence
 \code{-1} in the model formula does not have any effect.  The left-hand side
 of the \code{formula} must be a \code{\link[survival]{Surv}} object.}
@@ -76,7 +89,7 @@ implemented. It is advised to plot the estimates at each iteration using the
 Booth and Hobart (1999).
 }
 \examples{
-
+\donttest{
 n <- 50      # total sample size
 nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
@@ -105,7 +118,7 @@ fit.phmm <- phmm(Surv(time, event) ~ Z1 + Z2 + (-1 + Z1 + Z2 | cluster),
    NINIT = 10, MAXSTEP = 100, CONVERG=90)
 summary(fit.phmm)
 plot(fit.phmm)
-
+}
 }
 \references{
 Gilks WR and Wild P. (1992) Adaptive rejection sampling for

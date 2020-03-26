@@ -30,7 +30,7 @@ importance sampling, and bridge sampling (only implemented for nreff < 3).
 The default k = 2, is for the usual AIC.
 }
 \examples{
-
+\donttest{
 n <- 50      # total sample size
 nclust <- 5  # number of clusters
 clusters <- rep(1:nclust,each=n/nclust)
@@ -79,7 +79,7 @@ fit.phmm$loglik
 traceHat(fit.phmm)
 
 summary(fit.lmer)
-
+}
 }
 \references{
 Whitehead, J. (1980). Fitting Cox's Regression Model to Survival
